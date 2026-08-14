@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Resume Builder</title>
+
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+
+            margin: 0;
+
+            padding: 40px;
+
+            background: #f4f4f4;
+        }
+
+
+        .container {
+            max-width: 1000px;
+
+            margin: auto;
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 8px;
+        }
+
+
+        h1 {
+            margin-top: 0;
+        }
+
+
+        .button {
+            display: inline-block;
+
+            padding: 10px 18px;
+
+            background: #222;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 4px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .resume-card {
+            border: 1px solid #ddd;
+
+            padding: 15px;
+
+            margin-bottom: 10px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+
+        .resume-name {
+            font-weight: bold;
+
+            font-size: 17px;
+        }
+
+
+        .actions a {
+            margin-left: 8px;
+
+            text-decoration: none;
+
+            padding: 6px 10px;
+
+            border-radius: 3px;
+
+            background: #333;
+
+            color: white;
+
+            font-size: 13px;
+        }
+
+
+        .delete {
+            background: #b00020 !important;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+    <h1>
+        Resume Builder
+    </h1>
+
+
+    <a href="/resumes/new"
+       class="button">
+
+        + Create New Resume
+
+    </a>
+
+
+    <h2>
+        Saved Resumes
+    </h2>
+
+
+    <div th:if="${#lists.isEmpty(resumes)}">
+
+        No saved resumes yet.
+
+    </div>
+
+
+    <div th:each="resume : ${resumes}"
+         class="resume-card">
+
+
+        <div class="resume-name"
+             th:text="${resume.fullName}">
+
+            Resume Name
+
+        </div>
+
+
+        <div class="actions">
+
+
+            <a th:href="@{/resumes/{id}(id=${resume.id})}">
+                Preview
+            </a>
+
+
+            <a th:href="@{/resumes/edit/{id}(id=${resume.id})}">
+                Edit
+            </a>
+
+
+            <a th:href="@{/resumes/delete/{id}(id=${resume.id})}"
+               class="delete"
+               onclick="return confirm('Delete this resume?');">
+
+                Delete
+
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

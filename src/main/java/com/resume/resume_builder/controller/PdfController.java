@@ -1,0 +1,1709 @@
+package com.resume.resume_builder.controller;
+
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.resume.resume_builder.entity.Resume;
+import com.resume.resume_builder.service.ResumeService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.io.ByteArrayOutputStream;
+
+@Controller
+public class PdfController {
+
+    private final ResumeService resumeService;
+
+    public PdfController(ResumeService resumeService) {
+        this.resumeService = resumeService;
+    }
+
+    // =========================================================
+    // DOWNLOAD PDF
+    // =========================================================
+
+    @GetMapping("/resumes/{id}/pdf")
+    public ResponseEntity<byte[]> downloadPdf(
+            @PathVariable Long id) throws Exception {
+
+        Resume resume = resumeService.getResumeById(id);
+
+        ByteArrayOutputStream outputStream =
+                new ByteArrayOutputStream();
+
+        String html = createPdfHtml(resume);
+
+        PdfRendererBuilder builder =
+                new PdfRendererBuilder();
+
+        builder.withHtmlContent(html, null);
+        builder.toStream(outputStream);
+        builder.run();
+
+        byte[] pdf = outputStream.toByteArray();
+
+        String fileName =
+                (resume.getFullName() != null
+                        ? resume.getFullName()
+                        : "resume")
+                        .replaceAll(
+                                "[^a-zA-Z0-9-_]",
+                                "_"
+                        )
+                        + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\""
+                )
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+
+    // =========================================================
+    // CREATE PDF HTML
+    // =========================================================
+
+    private String createPdfHtml(Resume resume) {
+
+        StringBuilder html = new StringBuilder();
+
+        html.append("""
+                <!DOCTYPE html>
+                <html xmlns="http://www.w3.org/1999/xhtml">
+
+                <head>
+
+                    <meta charset="UTF-8" />
+
+                    <style>
+
+                        @page {
+                            size: A4;
+                            margin: 30px 34px 30px 34px;
+                        }
+
+                        * {
+                            box-sizing: border-box;
+                        }
+
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            background: #ffffff;
+                            color: #111111;
+                            font-family: Arial, sans-serif;
+                            font-size: 10.5pt;
+                        }
+
+
+                        /* =================================================
+                           HEADER
+                           ================================================= */
+
+                        .header-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            margin-bottom: 5px;
+                        }
+
+                        .header-left {
+                            width: 50%;
+                            padding: 0;
+                            vertical-align: top;
+                            text-align: left;
+                        }
+
+                        .header-right {
+                            width: 50%;
+                            padding: 0;
+                            vertical-align: top;
+                            text-align: left;
+                        }
+
+                        .header-row {
+                            height: 20px;
+                            line-height: 20px;
+                        }
+
+                        .name {
+                            font-size: 17pt;
+                            font-weight: bold;
+                        }
+
+                        .label {
+                            font-weight: bold;
+                        }
+
+                        .header-link {
+                            font-size: 10pt;
+                        }
+
+
+                        /* =================================================
+                           SECTIONS
+                           ================================================= */
+
+                        .section {
+                            margin-top: 7px;
+                            margin-bottom: 5px;
+                        }
+
+                        .section-title {
+                            border-top: 2px solid #999999;
+                            padding-top: 3px;
+                            margin-bottom: 6px;
+                            font-size: 12pt;
+                            font-weight: bold;
+                            line-height: 1.2;
+                        }
+
+
+                        /* =================================================
+                           PROFESSIONAL SUMMARY
+                           ================================================= */
+
+                        .summary {
+                            margin: 0;
+                            font-size: 10.5pt;
+                            line-height: 1.35;
+                            text-align: justify;
+                        }
+
+                        .summary p {
+                            margin-top: 0;
+                            margin-bottom: 3px;
+                        }
+
+
+                        /* =================================================
+                           EDUCATION
+                           ================================================= */
+
+                        .education-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            margin-bottom: 6px;
+                        }
+
+                        .education-left {
+                            width: 80%;
+                            padding: 0;
+                            vertical-align: top;
+                        }
+
+                        .education-date {
+                            width: 20%;
+                            padding: 0;
+                            vertical-align: top;
+                            text-align: right;
+                            white-space: nowrap;
+                        }
+
+                        .degree {
+                            font-weight: bold;
+                            font-size: 10.5pt;
+                            line-height: 1.25;
+                        }
+
+                        .education-details {
+                            font-size: 10pt;
+                            line-height: 1.25;
+                        }
+
+
+                        /* =================================================
+                           COMMON BULLET COLUMN
+
+                           REDUCED SPACING:
+                           width: 35px
+                           padding-left: 20px
+                           ================================================= */
+
+                        .skills-bullet,
+                        .project-bullet,
+                        .certification-bullet {
+
+                            width: 12px;
+
+                            padding-left: 20px;
+
+                            padding-right: 0;
+
+                            vertical-align: top;
+
+                            text-align: left;
+                        }
+
+
+                        /* =================================================
+                           FILLED CIRCLE
+
+                           Used for:
+                           Technical Skills
+                           Certifications
+                           ================================================= */
+
+                        .filled-bullet {
+
+                            display: inline-block;
+
+                            font-size: 10.5pt;
+                            line-height: 1;
+
+                            vertical-align: middle;
+                        }
+
+
+                        /* =================================================
+                           TECHNICAL SKILLS
+                           ================================================= */
+
+                        .skills-table {
+
+                            width: 100%;
+
+                            border-collapse: collapse;
+
+                            table-layout: fixed;
+
+                            font-size: 10.5pt;
+                        }
+
+                        .skills-bullet {
+
+                            width: 12px;
+
+                            padding-top: 4px;
+
+                            padding-bottom: 4px;
+
+                            padding-left: 20px;
+                        }
+
+                        .skills-category {
+
+                            width: 250px;
+
+                            padding: 3px 0;
+
+                            vertical-align: top;
+
+                            font-weight: bold;
+
+                            white-space: nowrap;
+                        }
+
+                        .skills-values {
+
+                            width: auto;
+
+                            padding: 3px 0;
+
+                            vertical-align: top;
+
+                            line-height: 1.3;
+                        }
+
+
+                        /* =================================================
+                           PROJECTS
+                           ================================================= */
+
+                        .project {
+
+                            margin-bottom: 8px;
+
+                            font-size: 10.5pt;
+
+                            line-height: 1.3;
+                        }
+
+                        .project-name {
+
+                            font-weight: bold;
+
+                            margin-bottom: 4px;
+                        }
+
+                        .project-list {
+
+                            width: 100%;
+
+                            border-collapse: collapse;
+
+                            table-layout: fixed;
+
+                            margin: 0;
+
+                            padding: 0;
+                        }
+
+
+                        /* =================================================
+                           PROJECT BULLET
+
+                           REDUCED SPACING:
+                           width: 35px
+                           padding-left: 20px
+                           ================================================= */
+
+                        .project-bullet {
+
+                            width: 12px;
+
+                            padding-top: 4px;
+
+                            padding-bottom: 3px;
+
+                            padding-left: 20px;
+
+                            padding-right: 0;
+
+                            vertical-align: top;
+
+                            text-align: left;
+                        }
+
+
+                        /* =================================================
+                           HOLLOW CIRCLE
+
+                           CSS-DRAWN CIRCLE
+
+                           This prevents the PDF from showing "#".
+                           ================================================= */
+
+                        .project-bullet-circle {
+
+                            display: inline-block;
+
+                            width: 6px;
+                            height: 6px;
+
+                            background: transparent;
+
+                            border: 1px solid #111111;
+
+                            border-radius: 50%;
+
+                            vertical-align: middle;
+                        }
+
+                        .project-text {
+
+                            width: auto;
+
+                            padding: 1px 0;
+
+                            vertical-align: top;
+
+                            text-align: left;
+
+                            line-height: 1.3;
+                        }
+
+
+                        /* =================================================
+                           CERTIFICATIONS
+                           ================================================= */
+
+                        .certifications-table {
+
+                            width: 100%;
+
+                            border-collapse: collapse;
+
+                            table-layout: fixed;
+
+                            font-size: 10.5pt;
+                        }
+
+                        .certification-bullet {
+
+                            width: 12px;
+
+                            padding-top: 5px;
+
+                            padding-bottom: 3px;
+
+                            padding-left: 20px;
+                        }
+
+                        .certification-name {
+
+                            width: auto;
+
+                            padding: 3px 0;
+
+                            vertical-align: top;
+
+                            text-align: left;
+
+                            line-height: 1.3;
+                        }
+
+                        .certification-date {
+
+                            width: 130px;
+
+                            padding: 3px 0;
+
+                            vertical-align: top;
+
+                            text-align: right;
+
+                            white-space: nowrap;
+
+                            line-height: 1.3;
+                        }
+
+
+                        /* =================================================
+                           TEXT
+                           ================================================= */
+
+                        b,
+                        strong {
+                            font-weight: bold;
+                        }
+
+                        i,
+                        em {
+                            font-style: italic;
+                        }
+
+                        u {
+                            text-decoration: underline;
+                        }
+
+                    </style>
+
+                </head>
+
+                <body>
+                """);
+
+
+        // =========================================================
+        // HEADER
+        //
+        // LEFT SIDE:
+        // Name
+        // Email
+        // GitHub
+        //
+        // RIGHT SIDE:
+        // Location
+        // Mobile
+        // LinkedIn
+        // =========================================================
+
+        html.append("""
+                <table class="header-table">
+
+                    <tr>
+
+                        <td class="header-left header-row">
+
+                            <span class="name">
+                """);
+
+        html.append(
+                safe(resume.getFullName())
+        );
+
+        html.append("""
+                            </span>
+
+                        </td>
+
+                        <td class="header-right header-row">
+
+                            <span class="label">
+                                Location:
+                            </span>
+                """);
+
+        html.append(
+                safe(resume.getLocation())
+        );
+
+        html.append("""
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td class="header-left header-row">
+
+                            <span class="label">
+                                Email:
+                            </span>
+                """);
+
+        html.append(
+                "<span class=\"header-link\">" +
+                        safe(resume.getEmail()) +
+                        "</span>"
+        );
+
+        html.append("""
+                        </td>
+
+                        <td class="header-right header-row">
+
+                            <span class="label">
+                                Mobile:
+                            </span>
+                """);
+
+        html.append(
+                safe(resume.getMobile())
+        );
+
+        html.append("""
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td class="header-left header-row">
+
+                            <span class="label">
+                                GitHub:
+                            </span>
+                """);
+
+        html.append(
+                "<span class=\"header-link\">" +
+                        safe(resume.getGithub()) +
+                        "</span>"
+        );
+
+        html.append("""
+                        </td>
+
+                        <td class="header-right header-row">
+
+                            <span class="label">
+                                LinkedIn:
+                            </span>
+                """);
+
+        html.append(
+                "<span class=\"header-link\">" +
+                        safe(resume.getLinkedin()) +
+                        "</span>"
+        );
+
+        html.append("""
+                        </td>
+
+                    </tr>
+
+                </table>
+                """);
+
+
+        // =========================================================
+        // PROFESSIONAL SUMMARY
+        // =========================================================
+
+        if (!isEmpty(
+                resume.getProfessionalSummary()
+        )) {
+
+            html.append("""
+                    <div class="section">
+
+                        <div class="section-title">
+                            Professional Summary
+                        </div>
+
+                        <div class="summary">
+                    """);
+
+            html.append(
+                    cleanRichText(
+                            resume.getProfessionalSummary()
+                    )
+            );
+
+            html.append("""
+                        </div>
+
+                    </div>
+                    """);
+        }
+
+
+        // =========================================================
+        // EDUCATION
+        // =========================================================
+
+        if (resume.getEducations() != null
+                && !resume.getEducations().isEmpty()) {
+
+            html.append("""
+                    <div class="section">
+
+                        <div class="section-title">
+                            Education
+                        </div>
+                    """);
+
+
+            for (var education :
+                    resume.getEducations()) {
+
+                html.append("""
+                        <table class="education-table">
+
+                            <tr>
+
+                                <td class="education-left">
+
+                                    <div class="degree">
+                        """);
+
+                html.append(
+                        safe(
+                                education.getDegree()
+                        )
+                );
+
+                html.append("""
+                                    </div>
+
+                                    <div class="education-details">
+                        """);
+
+
+                if (!isEmpty(
+                        education.getInstitution()
+                )) {
+
+                    html.append(
+                            safe(
+                                    education.getInstitution()
+                            )
+                    );
+                }
+
+
+                if (!isEmpty(
+                        education.getLocation()
+                )) {
+
+                    html.append(", ");
+
+                    html.append(
+                            safe(
+                                    education.getLocation()
+                            )
+                    );
+                }
+
+
+                if (!isEmpty(
+                        education.getScore()
+                )) {
+
+                    html.append(" | ");
+
+                    html.append(
+                            safe(
+                                    education.getScore()
+                            )
+                    );
+                }
+
+
+                html.append("""
+                                    </div>
+
+                                </td>
+
+                                <td class="education-date">
+                        """);
+
+
+                if (!isEmpty(
+                        education.getStartYear()
+                )) {
+
+                    html.append(
+                            safe(
+                                    education.getStartYear()
+                            )
+                    );
+                }
+
+
+                if (!isEmpty(
+                        education.getEndYear()
+                )) {
+
+                    html.append(" – ");
+
+                    html.append(
+                            safe(
+                                    education.getEndYear()
+                            )
+                    );
+                }
+
+
+                html.append("""
+                                </td>
+
+                            </tr>
+
+                        </table>
+                        """);
+            }
+
+
+            html.append("""
+                    </div>
+                    """);
+        }
+
+
+        // =========================================================
+        // TECHNICAL SKILLS
+        //
+        // FILLED CSS CIRCLE
+        // =========================================================
+
+        if (resume.getSkills() != null
+                && !resume.getSkills().isEmpty()) {
+
+            html.append("""
+                    <div class="section">
+
+                        <div class="section-title">
+                            Technical Skills
+                        </div>
+
+                        <table class="skills-table">
+                    """);
+
+
+            for (var skill :
+                    resume.getSkills()) {
+
+                if (isEmpty(
+                        skill.getCategory()
+                )
+                        && isEmpty(
+                        skill.getSkillValues()
+                )) {
+
+                    continue;
+                }
+
+
+                html.append("""
+                            <tr>
+
+                                <td class="skills-bullet">
+
+                                    <span class="filled-bullet">•</span>
+
+                                </td>
+
+                                <td class="skills-category">
+                        """);
+
+
+                if (!isEmpty(
+                        skill.getCategory()
+                )) {
+
+                    html.append(
+                            safe(
+                                    skill.getCategory()
+                            )
+                    );
+
+                    html.append(":");
+                }
+
+
+                html.append("""
+                                </td>
+
+                                <td class="skills-values">
+                        """);
+
+
+                html.append(
+                        safe(
+                                skill.getSkillValues()
+                        )
+                );
+
+
+                html.append("""
+                                </td>
+
+                            </tr>
+                        """);
+            }
+
+
+            html.append("""
+                        </table>
+
+                    </div>
+                    """);
+        }
+
+
+        // =========================================================
+        // PROJECTS
+        //
+        // HOLLOW CSS CIRCLE
+        //
+        // NO <li>, <ul>, <ol> ARE SENT TO PDF
+        // =========================================================
+
+        if (resume.getProjects() != null
+                && !resume.getProjects().isEmpty()) {
+
+            html.append("""
+                    <div class="section">
+
+                        <div class="section-title">
+                            Projects
+                        </div>
+                    """);
+
+
+            for (var project :
+                    resume.getProjects()) {
+
+                if (isEmpty(
+                        project.getProjectName()
+                )
+                        && isEmpty(
+                        project.getDescription()
+                )) {
+
+                    continue;
+                }
+
+
+                html.append("""
+                        <div class="project">
+
+                            <div class="project-name">
+                    """);
+
+
+                html.append(
+                        safe(
+                                project.getProjectName()
+                        )
+                );
+
+
+                html.append("""
+                            </div>
+                    """);
+
+
+                if (!isEmpty(
+                        project.getDescription()
+                )) {
+
+                    html.append(
+                            createProjectBullets(
+                                    project.getDescription()
+                            )
+                    );
+                }
+
+
+                html.append("""
+                        </div>
+                        """);
+            }
+
+
+            html.append("""
+                    </div>
+                    """);
+        }
+
+
+        // =========================================================
+        // CERTIFICATIONS
+        //
+        // FILLED CSS CIRCLE
+        // DATE RIGHT ALIGNED
+        // =========================================================
+
+        if (resume.getCertifications() != null
+                && !resume.getCertifications().isEmpty()) {
+
+            html.append("""
+                    <div class="section">
+
+                        <div class="section-title">
+                            Certifications
+                        </div>
+
+                        <table class="certifications-table">
+                    """);
+
+
+            for (var certification :
+                    resume.getCertifications()) {
+
+                if (isEmpty(
+                        certification.getName()
+                )
+                        && isEmpty(
+                        certification.getOrganization()
+                )
+                        && isEmpty(
+                        certification.getDate()
+                )) {
+
+                    continue;
+                }
+
+
+                html.append("""
+                            <tr>
+
+                                <td class="certification-bullet">
+
+                                    <span class="filled-bullet">•</span>
+
+                                </td>
+
+                                <td class="certification-name">
+                        """);
+
+
+                if (!isEmpty(
+                        certification.getName()
+                )) {
+
+                    html.append(
+                            safe(
+                                    certification.getName()
+                            )
+                    );
+                }
+
+
+                if (!isEmpty(
+                        certification.getOrganization()
+                )) {
+
+                    html.append(" - ");
+
+                    html.append(
+                            safe(
+                                    certification.getOrganization()
+                            )
+                    );
+                }
+
+
+                html.append("""
+                                </td>
+
+                                <td class="certification-date">
+                        """);
+
+
+                if (!isEmpty(
+                        certification.getDate()
+                )) {
+
+                    html.append(
+                            safe(
+                                    certification.getDate()
+                            )
+                    );
+                }
+
+
+                html.append("""
+                                </td>
+
+                            </tr>
+                        """);
+            }
+
+
+            html.append("""
+                        </table>
+
+                    </div>
+                    """);
+        }
+
+
+        // =========================================================
+        // CLOSE HTML
+        // =========================================================
+
+        html.append("""
+                </body>
+
+                </html>
+                """);
+
+
+        return html.toString();
+    }
+
+
+    // =========================================================
+    // CREATE PROJECT BULLETS
+    // =========================================================
+
+    private String createProjectBullets(
+            String description) {
+
+        if (description == null
+                || description.trim().isEmpty()) {
+
+            return "";
+        }
+
+
+        String text = description;
+
+
+        // Remove script
+        text = text.replaceAll(
+                "(?is)<script.*?>.*?</script>",
+                ""
+        );
+
+
+        // Remove style
+        text = text.replaceAll(
+                "(?is)<style.*?>.*?</style>",
+                ""
+        );
+
+
+        // List item ending -> newline
+        text = text.replaceAll(
+                "(?i)</li\\s*>",
+                "\n"
+        );
+
+
+        // Paragraph ending -> newline
+        text = text.replaceAll(
+                "(?i)</p\\s*>",
+                "\n"
+        );
+
+
+        // Div ending -> newline
+        text = text.replaceAll(
+                "(?i)</div\\s*>",
+                "\n"
+        );
+
+
+        // BR -> newline
+        text = text.replaceAll(
+                "(?i)<br\\s*/?>",
+                "\n"
+        );
+
+
+        // Remove all remaining HTML tags
+        text = text.replaceAll(
+                "(?is)<[^>]*>",
+                ""
+        );
+
+
+        // Decode entities
+        text = decodeProjectEntities(text);
+
+
+        // Non-breaking space
+        text = text.replace(
+                '\u00A0',
+                ' '
+        );
+
+
+        // Zero-width characters
+        text = text.replace(
+                "\u200B",
+                ""
+        );
+
+        text = text.replace(
+                "\u200C",
+                ""
+        );
+
+        text = text.replace(
+                "\u200D",
+                ""
+        );
+
+        text = text.replace(
+                "\uFEFF",
+                ""
+        );
+
+
+        String[] lines =
+                text.split("\\r?\\n");
+
+
+        StringBuilder result =
+                new StringBuilder();
+
+
+        for (String line :
+                lines) {
+
+            String item =
+                    cleanProjectItem(line);
+
+
+            if (item.isBlank()) {
+                continue;
+            }
+
+
+            // Escape project text
+            item = safe(item);
+
+
+            // Add CSS hollow circle
+            appendProjectBullet(
+                    result,
+                    item
+            );
+        }
+
+
+        return result.toString();
+    }
+
+
+    // =========================================================
+    // APPEND PROJECT BULLET
+    // =========================================================
+
+    private void appendProjectBullet(
+            StringBuilder result,
+            String item) {
+
+        result.append("""
+                <table class="project-list">
+
+                    <tr>
+
+                        <td class="project-bullet">
+
+                            <span class="project-bullet-circle">
+                            </span>
+
+                        </td>
+
+                        <td class="project-text">
+                """);
+
+
+        result.append(item);
+
+
+        result.append("""
+                        </td>
+
+                    </tr>
+
+                </table>
+                """);
+    }
+
+
+    // =========================================================
+    // CLEAN PROJECT ITEM
+    // =========================================================
+
+    private String cleanProjectItem(
+            String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+
+        String result =
+                value.trim();
+
+
+        // Decode #
+        result = result.replace(
+                "&#35;",
+                "#"
+        );
+
+        result = result.replace(
+                "&#x23;",
+                "#"
+        );
+
+        result = result.replace(
+                "&#X23;",
+                "#"
+        );
+
+        result = result.replace(
+                "&num;",
+                "#"
+        );
+
+
+        // Decode filled bullets
+        result = result.replace(
+                "&bull;",
+                "•"
+        );
+
+        result = result.replace(
+                "&#8226;",
+                "•"
+        );
+
+        result = result.replace(
+                "&#x2022;",
+                "•"
+        );
+
+        result = result.replace(
+                "&#X2022;",
+                "•"
+        );
+
+
+        // Decode hollow circles
+        result = result.replace(
+                "&#9675;",
+                "○"
+        );
+
+        result = result.replace(
+                "&#x25CB;",
+                "○"
+        );
+
+        result = result.replace(
+                "&#X25CB;",
+                "○"
+        );
+
+
+        // Non-breaking spaces
+        result = result.replace(
+                "&nbsp;",
+                " "
+        );
+
+        result = result.replace(
+                "&#160;",
+                " "
+        );
+
+        result = result.replace(
+                "&#xA0;",
+                " "
+        );
+
+        result = result.replace(
+                "&#XA0;",
+                " "
+        );
+
+
+        // Zero-width characters
+        result = result.replace(
+                "\u200B",
+                ""
+        );
+
+        result = result.replace(
+                "\u200C",
+                ""
+        );
+
+        result = result.replace(
+                "\u200D",
+                ""
+        );
+
+        result = result.replace(
+                "\uFEFF",
+                ""
+        );
+
+
+        result = result.trim();
+
+
+        // Remove # bullet
+        result = result.replaceFirst(
+                "^\\s*#+\\s*",
+                ""
+        );
+
+
+        // Remove existing bullets
+        result = result.replaceFirst(
+                "^\\s*[•○◦▪▫●◉]+\\s*",
+                ""
+        );
+
+
+        // Remove dash bullet
+        result = result.replaceFirst(
+                "^\\s*[-–—]+\\s+",
+                ""
+        );
+
+
+        // Remove star bullet
+        result = result.replaceFirst(
+                "^\\s*\\*+\\s+",
+                ""
+        );
+
+
+        // Remove numbered bullet
+        result = result.replaceFirst(
+                "^\\s*\\d+[.)]\\s*",
+                ""
+        );
+
+
+        // Final # safety
+        result = result.trim();
+
+        while (result.startsWith("#")) {
+
+            result =
+                    result.substring(1).trim();
+        }
+
+
+        return result.trim();
+    }
+
+
+    // =========================================================
+    // DECODE PROJECT ENTITIES
+    // =========================================================
+
+    private String decodeProjectEntities(
+            String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+
+        String result = value;
+
+
+        // Hash
+        result = result.replace(
+                "&#35;",
+                "#"
+        );
+
+        result = result.replace(
+                "&#x23;",
+                "#"
+        );
+
+        result = result.replace(
+                "&#X23;",
+                "#"
+        );
+
+        result = result.replace(
+                "&num;",
+                "#"
+        );
+
+
+        // Filled bullet
+        result = result.replace(
+                "&bull;",
+                "•"
+        );
+
+        result = result.replace(
+                "&#8226;",
+                "•"
+        );
+
+        result = result.replace(
+                "&#x2022;",
+                "•"
+        );
+
+        result = result.replace(
+                "&#X2022;",
+                "•"
+        );
+
+
+        // Hollow circle
+        result = result.replace(
+                "&#9675;",
+                "○"
+        );
+
+        result = result.replace(
+                "&#x25CB;",
+                "○"
+        );
+
+        result = result.replace(
+                "&#X25CB;",
+                "○"
+        );
+
+
+        // Spaces
+        result = result.replace(
+                "&nbsp;",
+                " "
+        );
+
+        result = result.replace(
+                "&#160;",
+                " "
+        );
+
+        result = result.replace(
+                "&#xA0;",
+                " "
+        );
+
+        result = result.replace(
+                "&#XA0;",
+                " "
+        );
+
+
+        // Ampersand
+        result = result.replace(
+                "&amp;",
+                "&"
+        );
+
+
+        // Dashes
+        result = result.replace(
+                "&ndash;",
+                "–"
+        );
+
+        result = result.replace(
+                "&mdash;",
+                "—"
+        );
+
+
+        return result;
+    }
+
+
+    // =========================================================
+    // CLEAN RICH TEXT
+    // =========================================================
+
+    private String cleanRichText(
+            String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+
+        String result = value;
+
+
+        // Remove script
+        result = result.replaceAll(
+                "(?is)<script.*?>.*?</script>",
+                ""
+        );
+
+
+        // Remove style
+        result = result.replaceAll(
+                "(?is)<style.*?>.*?</style>",
+                ""
+        );
+
+
+        // Remove event handlers
+        result = result.replaceAll(
+                "(?i)\\s+on[a-zA-Z]+\\s*=\\s*(['\"]).*?\\1",
+                ""
+        );
+
+
+        // BR
+        result = result.replaceAll(
+                "(?i)<br\\s*>",
+                "<br />"
+        );
+
+        result = result.replaceAll(
+                "(?i)<br\\s*/>",
+                "<br />"
+        );
+
+
+        // HR
+        result = result.replaceAll(
+                "(?i)<hr\\s*>",
+                "<hr />"
+        );
+
+        result = result.replaceAll(
+                "(?i)<hr\\s*/>",
+                "<hr />"
+        );
+
+
+        // Entities
+        result = result.replace(
+                "&nbsp;",
+                "&#160;"
+        );
+
+        result = result.replace(
+                "&NBSP;",
+                "&#160;"
+        );
+
+        result = result.replace(
+                "&bull;",
+                "&#8226;"
+        );
+
+        result = result.replace(
+                "&ndash;",
+                "&#8211;"
+        );
+
+        result = result.replace(
+                "&mdash;",
+                "&#8212;"
+        );
+
+
+        // Remove list containers
+        result = result.replaceAll(
+                "(?i)</?(ul|ol)[^>]*>",
+                ""
+        );
+
+
+        // Remove list items
+        result = result.replaceAll(
+                "(?i)<li[^>]*>",
+                ""
+        );
+
+        result = result.replaceAll(
+                "(?i)</li>",
+                "<br />"
+        );
+
+
+        // Keep only safe formatting tags
+        result = result.replaceAll(
+                "(?i)<(?!/?(b|strong|i|em|u|br|p|div|hr)(\\s|>|/))[^>]*>",
+                ""
+        );
+
+
+        return result;
+    }
+
+
+    // =========================================================
+    // CHECK EMPTY
+    // =========================================================
+
+    private boolean isEmpty(
+            String value) {
+
+        return value == null
+                || value.trim().isEmpty();
+    }
+
+
+    // =========================================================
+    // ESCAPE TEXT
+    // =========================================================
+
+    private String safe(
+            String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+
+        return value
+                .replace(
+                        "&",
+                        "&amp;"
+                )
+                .replace(
+                        "<",
+                        "&lt;"
+                )
+                .replace(
+                        ">",
+                        "&gt;"
+                )
+                .replace(
+                        "\"",
+                        "&quot;"
+                )
+                .replace(
+                        "'",
+                        "&#39;"
+                );
+    }
+}

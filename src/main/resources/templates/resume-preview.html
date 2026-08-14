@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Resume Preview</title>
+
+
+    <style>
+
+        /* =====================================================
+           PAGE
+           ===================================================== */
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #eeeeee;
+            color: #111111;
+            font-family: Arial, sans-serif;
+        }
+
+
+        /* =====================================================
+           TOOLBAR
+           ===================================================== */
+
+        .toolbar {
+
+            width: 794px;
+
+            margin: 0 auto 15px auto;
+
+            display: flex;
+
+            gap: 10px;
+
+            align-items: center;
+        }
+
+
+        .toolbar a,
+        .toolbar button {
+
+            padding: 8px 15px;
+
+            border: none;
+
+            border-radius: 4px;
+
+            background: #333333;
+
+            color: white;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            font-family: Arial, sans-serif;
+
+            font-size: 13px;
+
+            display: inline-block;
+        }
+
+
+        .toolbar a:hover,
+        .toolbar button:hover {
+
+            background: #555555;
+        }
+
+
+        .pdf-button {
+
+            padding: 8px 15px;
+
+            border: none;
+
+            border-radius: 4px;
+
+            background: #333333;
+
+            color: white;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            font-family: Arial, sans-serif;
+
+            font-size: 13px;
+
+            display: inline-block;
+        }
+
+
+        .pdf-button:hover {
+
+            background: #555555;
+        }
+
+
+        /* =====================================================
+           A4 RESUME PAGE
+           ===================================================== */
+
+        .resume-page {
+
+            width: 794px;
+
+            min-height: 1123px;
+
+            margin: 0 auto;
+
+            padding: 30px 34px;
+
+            background: #ffffff;
+
+            color: #111111;
+
+            font-family: Arial, sans-serif;
+
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.20);
+
+            overflow: hidden;
+        }
+
+
+        /* =====================================================
+           HEADER
+
+           LEFT                         RIGHT
+
+           Vishal Revaje                Location: Solapur...
+           Email: ...                   Mobile: ...
+           GitHub: ...                   LinkedIn: ...
+
+           ===================================================== */
+
+        .header {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            grid-template-rows: 28px 22px 22px;
+
+            column-gap: 35px;
+
+            row-gap: 0;
+
+            width: 100%;
+
+            margin-bottom: 5px;
+
+            font-family: Arial, sans-serif;
+
+            font-size: 10.5px;
+
+            line-height: 1.45;
+        }
+
+
+        .header-cell {
+
+            width: 100%;
+
+            min-width: 0;
+
+            height: 100%;
+
+            text-align: left;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            display: block;
+        }
+
+
+        .name-cell {
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            padding-top: 0;
+
+            padding-bottom: 2px;
+        }
+
+
+        .contact-label {
+
+            font-weight: bold;
+        }
+
+
+        .header a {
+
+            color: #111111;
+
+            text-decoration: none;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           MAIN SECTIONS
+
+           LINE BEFORE SECTION ONLY
+           NO LINE AFTER SECTION
+           ===================================================== */
+
+        .section {
+
+            margin-top: 7px;
+
+            margin-bottom: 5px;
+        }
+
+
+        .section-title {
+
+            border-top: 2px solid #999999;
+
+            padding-top: 3px;
+
+            margin-bottom: 6px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            line-height: 1.2;
+        }
+
+
+        /* =====================================================
+           PROFESSIONAL SUMMARY
+           ===================================================== */
+
+        .summary {
+
+            margin: 0;
+
+            font-size: 10.5px;
+
+            line-height: 1.35;
+
+            text-align: justify;
+        }
+
+
+        .summary p {
+
+            margin-top: 0;
+
+            margin-bottom: 3px;
+        }
+
+
+        /* =====================================================
+           EDUCATION
+           ===================================================== */
+
+        .education-item {
+
+            display: grid;
+
+            grid-template-columns: 1fr auto;
+
+            column-gap: 20px;
+
+            margin-bottom: 6px;
+
+            font-size: 10.5px;
+
+            line-height: 1.25;
+        }
+
+
+        .education-left {
+
+            min-width: 0;
+        }
+
+
+        .education-degree {
+
+            font-weight: bold;
+
+            margin-bottom: 1px;
+        }
+
+
+        .education-details {
+
+            font-size: 10px;
+        }
+
+
+        .education-date {
+
+            text-align: right;
+
+            white-space: nowrap;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           TECHNICAL SKILLS
+
+           FILLED CIRCLE = U+2022 = •
+
+           Fixed columns:
+
+           • | Category | Values
+           ===================================================== */
+
+        .skills-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            table-layout: fixed;
+
+            font-size: 10.5px;
+        }
+
+
+        .skills-bullet {
+
+            width: 12px;
+
+            padding: 2px 0;
+
+            vertical-align: top;
+
+            font-size: 12px;
+
+            line-height: 1.25;
+
+            text-align: left;
+        }
+
+
+        .skills-category {
+
+            width: 250px;
+
+            padding: 2px 0;
+
+            vertical-align: top;
+
+            font-weight: bold;
+
+            white-space: nowrap;
+        }
+
+
+        .skills-values {
+
+            width: auto;
+
+            padding: 2px 0;
+
+            vertical-align: top;
+
+            line-height: 1.25;
+        }
+
+
+        /* =====================================================
+           PROJECTS
+
+           HOLLOW CIRCLE = U+25CB = ○
+
+           Fixed columns:
+
+           ○ | Description
+
+           Every description starts at exactly the same place.
+           ===================================================== */
+
+        .project-item {
+
+            margin-bottom: 8px;
+
+            font-size: 10.5px;
+
+            line-height: 1.3;
+        }
+
+
+        .project-name {
+
+            font-weight: bold;
+
+            margin-bottom: 4px;
+        }
+
+
+        .project-bullet-container {
+
+            width: 100%;
+
+            margin: 0;
+
+            padding: 0;
+        }
+
+
+        .project-bullet-row {
+
+            display: grid;
+
+            grid-template-columns: 28px 1fr;
+
+            width: 100%;
+
+            margin: 0;
+
+            padding: 0;
+        }
+
+
+        .project-bullet {
+
+            width: 28px;
+
+            padding-left: 8px;
+
+            padding-top: 1px;
+
+            vertical-align: top;
+
+            text-align: left;
+
+            font-size: 12px;
+
+            line-height: 1.3;
+        }
+
+
+        .project-bullet-text {
+
+            width: auto;
+
+            padding-top: 1px;
+
+            padding-bottom: 1px;
+
+            padding-right: 0;
+
+            text-align: left;
+
+            line-height: 1.3;
+        }
+
+
+        /*
+         * Original UL/OL is hidden after JavaScript
+         * converts it into our custom rows.
+         */
+
+        .project-description ul,
+        .project-description ol {
+
+            display: none;
+        }
+
+
+        /* =====================================================
+           CERTIFICATIONS
+
+           FILLED CIRCLE = U+2022 = •
+
+           Fixed columns:
+
+           • | Certification | Date
+           ===================================================== */
+
+        .certifications-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            table-layout: fixed;
+
+            font-size: 10.5px;
+        }
+
+
+        .certification-bullet {
+
+            width: 12px;
+
+            padding: 3px 0;
+
+            vertical-align: top;
+
+            font-size: 12px;
+
+            line-height: 1.25;
+
+            text-align: left;
+        }
+
+
+        .certification-name {
+
+            width: auto;
+
+            padding: 3px 0;
+
+            vertical-align: top;
+
+            text-align: left;
+
+            line-height: 1.25;
+        }
+
+
+        .certification-date {
+
+            width: 130px;
+
+            padding: 3px 0;
+
+            vertical-align: top;
+
+            text-align: right;
+
+            white-space: nowrap;
+
+            line-height: 1.25;
+        }
+
+
+        /* =====================================================
+           TEXT FORMATTING
+           ===================================================== */
+
+        b,
+        strong {
+
+            font-weight: bold;
+        }
+
+
+        i,
+        em {
+
+            font-style: italic;
+        }
+
+
+        u {
+
+            text-decoration: underline;
+        }
+
+
+        /* =====================================================
+           PRINT
+           ===================================================== */
+
+        @media print {
+
+            html,
+            body {
+
+                margin: 0;
+
+                padding: 0;
+
+                background: #ffffff;
+            }
+
+
+            .toolbar {
+
+                display: none !important;
+            }
+
+
+            .resume-page {
+
+                width: 210mm;
+
+                min-height: 297mm;
+
+                margin: 0;
+
+                padding: 30px 34px;
+
+                box-shadow: none;
+
+                overflow: visible;
+            }
+
+        }
+
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
+        @media screen and (max-width: 850px) {
+
+            body {
+
+                padding: 10px;
+
+                overflow-x: auto;
+            }
+
+
+            .toolbar {
+
+                width: 794px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     TOOLBAR
+     ========================================================= -->
+
+<div class="toolbar">
+
+    <a th:href="@{/resumes/edit/{id}(id=${resume.id})}">
+        Edit Resume
+    </a>
+
+
+    <a th:href="@{/resumes/{id}/pdf(id=${resume.id})}"
+       class="pdf-button">
+
+        Download as PDF
+
+    </a>
+
+
+    <a href="/">
+        Saved Resumes
+    </a>
+
+</div>
+
+
+
+<!-- =========================================================
+     RESUME PAGE
+     ========================================================= -->
+
+<div class="resume-page">
+
+
+    <!-- =====================================================
+         HEADER
+
+         LEFT                         RIGHT
+
+         Vishal Revaje                Location: ...
+         Email: ...                   Mobile: ...
+         LinkedIn: ...                GitHub: ...
+
+         ===================================================== -->
+
+    <div class="header">
+
+
+        <!-- ROW 1 LEFT -->
+
+        <div class="header-cell name-cell">
+
+            <span th:text="${resume.fullName}">
+                Vishal Revaje
+            </span>
+
+        </div>
+
+
+        <!-- ROW 1 RIGHT -->
+
+        <div class="header-cell">
+
+            <span class="contact-label">
+                Location:
+            </span>
+
+            <span th:text="${resume.location}">
+                Solapur, Maharashtra
+            </span>
+
+        </div>
+
+
+        <!-- ROW 2 LEFT -->
+
+        <div class="header-cell">
+
+            <span class="contact-label">
+                Email:
+            </span>
+
+            <span th:if="${resume.email != null
+                          and !resume.email.isEmpty()}">
+
+                <a th:href="'mailto:' + ${resume.email}"
+                   th:text="${resume.email}">
+
+                    revajevishal39@gmail.com
+
+                </a>
+
+            </span>
+
+        </div>
+
+
+        <!-- ROW 2 RIGHT -->
+
+        <div class="header-cell">
+
+            <span class="contact-label">
+                Mobile:
+            </span>
+
+            <span th:text="${resume.mobile}">
+                +91 9579906987
+            </span>
+
+        </div>
+
+
+        <!-- ROW 3 LEFT -->
+
+        <div class="header-cell">
+
+            <span class="contact-label">
+                GitHub:
+            </span>
+
+            <span th:if="${resume.github != null
+                          and !resume.github.isEmpty()}">
+
+                <a th:href="${resume.github}"
+                   target="_blank"
+                   th:text="${resume.github}">
+
+                    github.com/VishalRevaje
+
+                </a>
+
+            </span>
+
+        </div>
+
+
+        <!-- ROW 3 RIGHT -->
+
+        <div class="header-cell">
+
+            <span class="contact-label">
+                LinkedIn:
+            </span>
+
+            <span th:if="${resume.linkedin != null
+                          and !resume.linkedin.isEmpty()}">
+
+                <a th:href="${resume.linkedin}"
+                   target="_blank"
+                   th:text="${resume.linkedin}">
+
+                    linkedin.com/in/vishal-revaje-3b513622a
+
+                </a>
+
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         PROFESSIONAL SUMMARY
+         ===================================================== -->
+
+    <div class="section"
+         th:if="${resume.professionalSummary != null
+                 and !resume.professionalSummary.isEmpty()}">
+
+
+        <div class="section-title">
+            Professional Summary
+        </div>
+
+
+        <div class="summary"
+             th:utext="${resume.professionalSummary}">
+
+            Professional summary goes here.
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         EDUCATION
+         ===================================================== -->
+
+    <div class="section"
+         th:if="${resume.educations != null
+                 and !resume.educations.isEmpty()}">
+
+
+        <div class="section-title">
+            Education
+        </div>
+
+
+        <div th:each="education : ${resume.educations}"
+             class="education-item">
+
+
+            <div class="education-left">
+
+
+                <div class="education-degree"
+                     th:if="${education.degree != null
+                             and !education.degree.isEmpty()}"
+                     th:text="${education.degree}">
+
+                    B.Tech in Electronics &amp;
+                    Telecommunication Engineering
+
+                </div>
+
+
+                <div class="education-details">
+
+
+                    <span th:if="${education.institution != null
+                                  and !education.institution.isEmpty()}"
+                          th:text="${education.institution}">
+
+                        N.K. Orchid College of Engineering
+
+                    </span>
+
+
+                    <span th:if="${education.location != null
+                                  and !education.location.isEmpty()}">
+
+                        ,
+
+                        <span th:text="${education.location}">
+                            Solapur
+                        </span>
+
+                    </span>
+
+
+                    <span th:if="${education.score != null
+                                  and !education.score.isEmpty()}">
+
+                        |
+
+                        <span th:text="${education.score}">
+                            CGPA: 7.03/10
+                        </span>
+
+                    </span>
+
+
+                </div>
+
+
+            </div>
+
+
+            <div class="education-date">
+
+
+                <span th:if="${education.startYear != null
+                              and !education.startYear.isEmpty()}"
+                      th:text="${education.startYear}">
+
+                    2021
+
+                </span>
+
+
+                <span th:if="${education.endYear != null
+                              and !education.endYear.isEmpty()}">
+
+                    –
+
+                    <span th:text="${education.endYear}">
+                        2024
+                    </span>
+
+                </span>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TECHNICAL SKILLS
+
+         FILLED CIRCLE = U+2022
+         ===================================================== -->
+
+    <div class="section"
+         th:if="${resume.skills != null
+                 and !resume.skills.isEmpty()}">
+
+
+        <div class="section-title">
+            Technical Skills
+        </div>
+
+
+        <table class="skills-table">
+
+
+            <tr th:each="skill : ${resume.skills}">
+
+
+                <!-- FILLED CIRCLE -->
+
+                <td class="skills-bullet">
+
+                    •
+
+                </td>
+
+
+                <!-- CATEGORY -->
+
+                <td class="skills-category">
+
+                    <span th:if="${skill.category != null
+                                  and !skill.category.isEmpty()}"
+                          th:text="${skill.category + ':'}">
+
+                        Programming Languages:
+
+                    </span>
+
+                </td>
+
+
+                <!-- VALUES -->
+
+                <td class="skills-values">
+
+                    <span th:if="${skill.skillValues != null
+                                  and !skill.skillValues.isEmpty()}"
+                          th:text="${skill.skillValues}">
+
+                        C, Java, Python, SQL
+
+                    </span>
+
+                </td>
+
+
+            </tr>
+
+
+        </table>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         PROJECTS
+
+         IMPORTANT:
+
+         The original description is rendered into a hidden
+         temporary area.
+
+         JavaScript reads the LI elements and creates:
+
+         ○ description
+         ○ description
+         ○ description
+
+         The original UL/OL is then completely removed.
+         ===================================================== -->
+
+    <div class="section"
+         th:if="${resume.projects != null
+                 and !resume.projects.isEmpty()}">
+
+
+        <div class="section-title">
+            Projects
+        </div>
+
+
+        <div th:each="project : ${resume.projects}"
+             class="project-item">
+
+
+            <!-- PROJECT NAME -->
+
+            <div class="project-name"
+                 th:if="${project.projectName != null
+                         and !project.projectName.isEmpty()}"
+                 th:text="${project.projectName}">
+
+                Commercial Website with Stripe Payments
+
+            </div>
+
+
+            <!-- PROJECT DESCRIPTION -->
+
+            <div class="project-description"
+                 th:if="${project.description != null
+                         and !project.description.isEmpty()}"
+                 th:utext="${project.description}">
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         CERTIFICATIONS
+
+         FILLED CIRCLE = U+2022
+         DATE = FAR RIGHT
+         ===================================================== -->
+
+    <div class="section"
+         th:if="${resume.certifications != null
+                 and !resume.certifications.isEmpty()}">
+
+
+        <div class="section-title">
+            Certifications
+        </div>
+
+
+        <table class="certifications-table">
+
+
+            <tr th:each="certification : ${resume.certifications}">
+
+
+                <!-- FILLED CIRCLE -->
+
+                <td class="certification-bullet">
+
+                    •
+
+                </td>
+
+
+                <!-- CERTIFICATION -->
+
+                <td class="certification-name">
+
+
+                    <span th:if="${certification.name != null
+                                  and !certification.name.isEmpty()}"
+                          th:text="${certification.name}">
+
+                        Java Spring Boot Full Stack
+
+                    </span>
+
+
+                    <span th:if="${certification.organization != null
+                                  and !certification.organization.isEmpty()}">
+
+                        -
+
+                        <span th:text="${certification.organization}">
+
+                            Udemy
+
+                        </span>
+
+                    </span>
+
+
+                </td>
+
+
+                <!-- DATE -->
+
+                <td class="certification-date">
+
+                    <span th:if="${certification.date != null
+                                  and !certification.date.isEmpty()}"
+                          th:text="${certification.date}">
+
+                        June 2025
+
+                    </span>
+
+                </td>
+
+
+            </tr>
+
+
+        </table>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     PROJECT BULLET CONVERTER
+
+     THIS IS THE IMPORTANT FIX.
+
+     It does NOT leave the original UL on the page.
+
+     It reads each LI, removes:
+
+        #
+        ##
+        *
+        -
+        •
+        ○
+        ◦
+        ▪
+        ▫
+        1.
+        1)
+
+     and creates a brand-new row containing:
+
+        ○   Project description
+
+     ========================================================= -->
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            convertProjectDescriptions();
+
+        }
+    );
+
+
+    /* =========================================================
+       CONVERT ALL PROJECT DESCRIPTIONS
+       ========================================================= */
+
+    function convertProjectDescriptions() {
+
+        const descriptions =
+            document.querySelectorAll(
+                ".project-description"
+            );
+
+
+        descriptions.forEach(
+            function (description) {
+
+                convertOneProjectDescription(
+                    description
+                );
+
+            }
+        );
+    }
+
+
+    /* =========================================================
+       CONVERT ONE PROJECT DESCRIPTION
+       ========================================================= */
+
+    function convertOneProjectDescription(
+        description
+    ) {
+
+        /*
+         * Find LI elements first.
+         */
+
+        const listItems =
+            description.querySelectorAll(
+                "li"
+            );
+
+
+        /*
+         * If there are LI elements,
+         * convert each one.
+         */
+
+        if (listItems.length > 0) {
+
+            const container =
+                document.createElement(
+                    "div"
+                );
+
+
+            container.className =
+                "project-bullet-container";
+
+
+            listItems.forEach(
+                function (li) {
+
+                    const text =
+                        cleanProjectBulletText(
+                            li.innerHTML
+                        );
+
+
+                    if (
+                        text.trim().length === 0
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    addProjectBullet(
+                        container,
+                        text
+                    );
+
+                }
+            );
+
+
+            /*
+             * Completely replace the original
+             * project description.
+             *
+             * This removes the original UL/OL
+             * and therefore removes its #.
+             */
+
+            description.innerHTML = "";
+
+            description.appendChild(
+                container
+            );
+
+
+            return;
+        }
+
+
+        /*
+         * If there is no LI, handle plain text.
+         */
+
+        convertPlainProjectDescription(
+            description
+        );
+    }
+
+
+    /* =========================================================
+       ADD ONE PROJECT BULLET
+       ========================================================= */
+
+    function addProjectBullet(
+        container,
+        text
+    ) {
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "project-bullet-row";
+
+
+        /*
+         * Hollow circle.
+         *
+         * U+25CB
+         */
+
+        const bullet =
+            document.createElement(
+                "div"
+            );
+
+
+        bullet.className =
+            "project-bullet";
+
+
+        bullet.textContent =
+            "\u25CB";
+
+
+        /*
+         * Description text.
+         */
+
+        const content =
+            document.createElement(
+                "div"
+            );
+
+
+        content.className =
+            "project-bullet-text";
+
+
+        content.innerHTML =
+            text;
+
+
+        /*
+         * Add bullet and content.
+         */
+
+        row.appendChild(
+            bullet
+        );
+
+
+        row.appendChild(
+            content
+        );
+
+
+        container.appendChild(
+            row
+        );
+    }
+
+
+    /* =========================================================
+       CLEAN PROJECT BULLET TEXT
+       ========================================================= */
+
+    function cleanProjectBulletText(
+        text
+    ) {
+
+        if (!text) {
+
+            return "";
+
+        }
+
+
+        /*
+         * Remove leading #.
+         *
+         * Examples:
+         *
+         * # Built something
+         * ## Built something
+         */
+
+        text =
+            text.replace(
+                /^\s*#+\s*/,
+                ""
+            );
+
+
+        /*
+         * Remove leading -, *, •, ○ etc.
+         */
+
+        text =
+            text.replace(
+                /^\s*[-*•○◦▪▫]+\s*/,
+                ""
+            );
+
+
+        /*
+         * Remove numbered bullets.
+         *
+         * 1. text
+         * 1) text
+         */
+
+        text =
+            text.replace(
+                /^\s*\d+[\.\)]\s*/,
+                ""
+            );
+
+
+        /*
+         * Remove leading whitespace.
+         */
+
+        text =
+            text.trim();
+
+
+        return text;
+    }
+
+
+    /* =========================================================
+       HANDLE PLAIN PROJECT DESCRIPTION
+       ========================================================= */
+
+    function convertPlainProjectDescription(
+        description
+    ) {
+
+        let text =
+            description.innerHTML;
+
+
+        /*
+         * Convert BR into newline.
+         */
+
+        text =
+            text.replace(
+                /<br\s*\/?>/gi,
+                "\n"
+            );
+
+
+        /*
+         * Convert paragraph/div endings
+         * into new lines.
+         */
+
+        text =
+            text.replace(
+                /<\/p>/gi,
+                "\n"
+            );
+
+
+        text =
+            text.replace(
+                /<\/div>/gi,
+                "\n"
+            );
+
+
+        /*
+         * Remove remaining HTML tags.
+         */
+
+        text =
+            text.replace(
+                /<[^>]*>/g,
+                ""
+            );
+
+
+        /*
+         * Decode common HTML entities.
+         */
+
+        text =
+            text.replace(
+                /&nbsp;/gi,
+                " "
+            );
+
+
+        text =
+            text.replace(
+                /&amp;/gi,
+                "&"
+            );
+
+
+        text =
+            text.replace(
+                /&ndash;/gi,
+                "–"
+            );
+
+
+        text =
+            text.replace(
+                /&mdash;/gi,
+                "—"
+            );
+
+
+        /*
+         * Split into lines.
+         */
+
+        const lines =
+            text.split(/\r?\n/);
+
+
+        const container =
+            document.createElement(
+                "div"
+            );
+
+
+        container.className =
+            "project-bullet-container";
+
+
+        lines.forEach(
+            function (line) {
+
+                line =
+                    cleanProjectBulletText(
+                        line
+                    );
+
+
+                if (
+                    line.trim().length === 0
+                ) {
+
+                    return;
+
+                }
+
+
+                addProjectBullet(
+                    container,
+                    escapeHtml(line)
+                );
+
+            }
+        );
+
+
+        /*
+         * Completely replace original content.
+         */
+
+        description.innerHTML = "";
+
+        description.appendChild(
+            container
+        );
+    }
+
+
+    /* =========================================================
+       ESCAPE HTML
+       ========================================================= */
+
+    function escapeHtml(
+        text
+    ) {
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+
+        div.textContent =
+            text;
+
+
+        return div.innerHTML;
+    }
+
+</script>
+
+
+</body>
+
+</html>
