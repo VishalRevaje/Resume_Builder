@@ -28,7 +28,6 @@ public class ResumeController {
 
 
 
-
     /* =====================================================
        CREATE
        ===================================================== */
@@ -44,6 +43,7 @@ public class ResumeController {
 
 
         // Add one empty record of every section
+
         resume.getEducations().add(new Education());
 
         resume.getSkills().add(new Skill());
@@ -114,9 +114,13 @@ public class ResumeController {
         );
 
 
+        // Save resume
+
         Resume savedResume =
                 resumeService.saveResume(resume);
 
+
+        // Redirect to resume preview
 
         return "redirect:/resumes/" + savedResume.getId();
     }

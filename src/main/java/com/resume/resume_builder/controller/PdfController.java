@@ -10,7 +10,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.io.ByteArrayInputStream;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSStream;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 public class PdfController {
@@ -39,11 +50,51 @@ public class PdfController {
         PdfRendererBuilder builder =
                 new PdfRendererBuilder();
 
+        // Register Arial Regular
+        builder.useFont(
+                () -> getClass().getResourceAsStream("/fonts/arial.ttf"),
+                "Arial",
+                400,
+                com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle.NORMAL,
+                true
+        );
+
+        // Register Arial Bold
+        builder.useFont(
+                () -> getClass().getResourceAsStream("/fonts/arialbd.ttf"),
+                "Arial",
+                700,
+                com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle.NORMAL,
+                true
+        );
+
+        // Register Arial Italic
+        builder.useFont(
+                () -> getClass().getResourceAsStream("/fonts/ariali.ttf"),
+                "Arial",
+                400,
+                com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle.ITALIC,
+                true
+        );
+
+        // Register Arial Bold Italic
+        builder.useFont(
+                () -> getClass().getResourceAsStream("/fonts/arialbi.ttf"),
+                "Arial",
+                700,
+                com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle.ITALIC,
+                true
+        );
+
         builder.withHtmlContent(html, null);
         builder.toStream(outputStream);
         builder.run();
 
-        byte[] pdf = outputStream.toByteArray();
+        // OpenHTMLToPDF can generate an incorrect /ToUnicode mapping
+        // for the Arial hyphen glyph. Repair the generated PDF before
+        // returning it so copy/paste produces a normal ASCII hyphen.
+        byte[] generatedPdf = outputStream.toByteArray();
+        byte[] pdf = repairPdfToUnicode(generatedPdf);
 
         String fileName =
                 (resume.getFullName() != null
@@ -90,6 +141,7 @@ public class PdfController {
 
                         * {
                             box-sizing: border-box;
+                            font-family: Arial, sans-serif;
                         }
 
                         body {
@@ -173,7 +225,7 @@ public class PdfController {
                             margin: 0;
                             font-size: 10.5pt;
                             line-height: 1.35;
-                            text-align: justify;
+                            text-align: left;
                         }
 
                         .summary p {
@@ -450,6 +502,12 @@ public class PdfController {
                             line-height: 1.3;
                         }
 
+                        .certification-name-with-bullet {
+
+                            padding-left: 20px;
+                        }
+
+
                         .certification-date {
 
                             width: 130px;
@@ -509,7 +567,7 @@ public class PdfController {
         html.append("""
                 <table class="header-table">
 
-                    <tr>
+                    <tr style="padding-bottom: 10px;">
 
                         <td class="header-left header-row">
 
@@ -525,7 +583,7 @@ public class PdfController {
 
                         </td>
 
-                        <td class="header-right header-row">
+                        <td class="header-right header-row" style="padding-bottom: 10px;">
 
                             <span class="label">
                                 Location:
@@ -586,11 +644,24 @@ public class PdfController {
                             </span>
                 """);
 
-        html.append(
-                "<span class=\"header-link\">" +
-                        safe(resume.getGithub()) +
-                        "</span>"
-        );
+        String github = resume.getGithub();
+
+        if (!isEmpty(github)) {
+            String githubUrl = github.trim();
+
+            if (!githubUrl.startsWith("http://")
+                    && !githubUrl.startsWith("https://")) {
+                githubUrl = "https://" + githubUrl;
+            }
+
+            html.append(
+                    "<a class=\"header-link\" href=\"" +
+                            safe(githubUrl) +
+                            "\" target=\"_blank\">" +
+                            safe(github) +
+                            "</a>"
+            );
+        }
 
         html.append("""
                         </td>
@@ -602,11 +673,24 @@ public class PdfController {
                             </span>
                 """);
 
-        html.append(
-                "<span class=\"header-link\">" +
-                        safe(resume.getLinkedin()) +
-                        "</span>"
-        );
+        String linkedin = resume.getLinkedin();
+
+        if (!isEmpty(linkedin)) {
+            String linkedinUrl = linkedin.trim();
+
+            if (!linkedinUrl.startsWith("http://")
+                    && !linkedinUrl.startsWith("https://")) {
+                linkedinUrl = "https://" + linkedinUrl;
+            }
+
+            html.append(
+                    "<a class=\"header-link\" href=\"" +
+                            safe(linkedinUrl) +
+                            "\" target=\"_blank\">" +
+                            safe(linkedin) +
+                            "</a>"
+            );
+        }
 
         html.append("""
                         </td>
@@ -989,15 +1073,11 @@ public class PdfController {
 
 
                 html.append("""
-                            <tr>
+                               <tr>
 
-                                <td class="certification-bullet">
-
-                                    <span class="filled-bullet">•</span>
-
-                                </td>
-
-                                <td class="certification-name">
+                               <td class="certification-name certification-name-with-bullet">
+                        
+                                   <span class="filled-bullet">•</span>&#160;
                         """);
 
 
@@ -1369,6 +1449,41 @@ public class PdfController {
                 ""
         );
 
+        // Replace all soft-hyphen forms with a normal hyphen
+        result = result.replace(
+                "\u00AD",
+                "-"
+        );
+
+        result = result.replace(
+                "&shy;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#173;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#xAD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#XAD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#x00AD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#X00AD;",
+                "-"
+        );
 
         result = result.trim();
 
@@ -1538,6 +1653,43 @@ public class PdfController {
                 "—"
         );
 
+        // Decode soft hyphen entities as normal hyphen
+        result = result.replace(
+                "&shy;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#173;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#xAD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#XAD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#x00AD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#X00AD;",
+                "-"
+        );
+
+        // Replace actual Unicode soft hyphen
+        result = result.replace(
+                "\u00AD",
+                "-"
+        );
+
 
         return result;
     }
@@ -1655,8 +1807,165 @@ public class PdfController {
                 ""
         );
 
+        // Replace all soft-hyphen forms with a normal hyphen
+        result = result.replace(
+                "\u00AD",
+                "-"
+        );
+
+        result = result.replace(
+                "&shy;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#173;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#xAD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#XAD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#x00AD;",
+                "-"
+        );
+
+        result = result.replace(
+                "&#X00AD;",
+                "-"
+        );
+
 
         return result;
+    }
+
+
+    // =========================================================
+    // REPAIR PDF /ToUnicode
+    // =========================================================
+    //
+    // OpenHTMLToPDF 1.0.10 can generate an Arial /ToUnicode mapping
+    // where the visible hyphen glyph is mapped to U+00AD (soft hyphen).
+    //
+    // This post-process keeps the Arial glyph/appearance unchanged and
+    // changes only the Unicode mapping used by copy/paste and extraction:
+    //
+    //     <0010> <0010> <00AD>
+    //                  ↓
+    //     <0010> <0010> <002D>
+    //
+    // U+00AD = soft hyphen
+    // U+002D = normal ASCII hyphen "-"
+    // =========================================================
+
+    private byte[] repairPdfToUnicode(byte[] pdfBytes) throws IOException {
+
+        try (
+                PDDocument document =
+                        PDDocument.load(
+                                new ByteArrayInputStream(pdfBytes)
+                        );
+
+                ByteArrayOutputStream outputStream =
+                        new ByteArrayOutputStream()
+        ) {
+
+            for (PDPage page : document.getPages()) {
+
+                PDResources resources = page.getResources();
+
+                if (resources == null) {
+                    continue;
+                }
+
+                for (COSName fontName : resources.getFontNames()) {
+
+                    PDFont font = resources.getFont(fontName);
+
+                    if (font == null) {
+                        continue;
+                    }
+
+                    String pdfFontName = font.getName();
+
+                    // Only repair the Arial fonts registered by this
+                    // controller. Other fonts remain untouched.
+                    if (pdfFontName == null
+                            || !pdfFontName
+                            .toLowerCase(java.util.Locale.ROOT)
+                            .contains("arial")) {
+                        continue;
+                    }
+
+                    if (!(font.getCOSObject()
+                            .getDictionaryObject(COSName.TO_UNICODE)
+                            instanceof COSStream toUnicode)) {
+                        continue;
+                    }
+
+                    repairToUnicodeStream(toUnicode);
+                }
+            }
+
+            document.save(outputStream);
+
+            return outputStream.toByteArray();
+        }
+    }
+
+
+    private void repairToUnicodeStream(
+            COSStream stream) throws IOException {
+
+        byte[] decodedBytes;
+
+        try (InputStream inputStream =
+                     stream.createInputStream()) {
+
+            decodedBytes = inputStream.readAllBytes();
+        }
+
+        String cmap =
+                new String(
+                        decodedBytes,
+                        StandardCharsets.ISO_8859_1
+                );
+
+        // This is the exact incorrect mapping found in the generated
+        // Arial PDF. Change only this mapping.
+        String repairedCmap =
+                cmap.replace(
+                        "<0010> <0010> <00AD>",
+                        "<0010> <0010> <002D>"
+                );
+
+        // Nothing to repair in this font's CMap.
+        if (cmap.equals(repairedCmap)) {
+            return;
+        }
+
+        // We read the decoded stream above, so remove the old filter
+        // information before writing the repaired plain-text CMap.
+        stream.removeItem(COSName.FILTER);
+        stream.removeItem(COSName.DECODE_PARMS);
+
+        try (OutputStream outputStream =
+                     stream.createOutputStream()) {
+
+            outputStream.write(
+                    repairedCmap.getBytes(
+                            StandardCharsets.ISO_8859_1
+                    )
+            );
+        }
     }
 
 
