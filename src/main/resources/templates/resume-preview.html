@@ -824,64 +824,82 @@
 
 
     <!-- =====================================================
-         PROFESSIONAL SUMMARY
+         DYNAMIC RESUME SECTIONS
+
+         The order comes from resume.sectionOrderList.
+         Each section keeps its existing content/layout; only
+         the order and section title are made dynamic.
          ===================================================== -->
 
-    <div class="section"
-         th:if="${resume.professionalSummary != null
+    <div
+            th:each="sectionKey : ${resume.sectionOrderList}"
+    >
+
+        <!-- =====================================================
+             PROFESSIONAL SUMMARY
+             ===================================================== -->
+
+        <div class="section"
+             th:if="${sectionKey == 'summary'
+                 and resume.professionalSummary != null
                  and !resume.professionalSummary.isEmpty()}">
 
 
-        <div class="section-title">
-            Professional Summary
+            <div class="section-title"
+                 th:text="${resume.summaryTitle}">
+                Professional Summary
+            </div>
+
+
+            <div class="summary"
+                 th:utext="${resume.professionalSummary}">
+
+                Professional summary goes here.
+
+            </div>
+
+
         </div>
 
 
-        <div class="summary"
-             th:utext="${resume.professionalSummary}">
-
-            Professional summary goes here.
-
-        </div>
-
-
-    </div>
 
 
 
-    <!-- =====================================================
-         EDUCATION
-         ===================================================== -->
+        <!-- =====================================================
+             EDUCATION
+             ===================================================== -->
 
-    <div class="section"
-         th:if="${resume.educations != null
+        <div class="section"
+             th:if="${sectionKey == 'education'
+                 and resume.educations != null
                  and !resume.educations.isEmpty()}">
 
 
-        <div class="section-title">
-            Education
-        </div>
+            <div class="section-title"
+                 th:text="${resume.educationTitle}">
+                Education
+            </div>
 
 
-        <div th:each="education : ${resume.educations}"
-             class="education-item">
+            <div th:each="education : ${resume.educations}"
+                 class="education-item">
 
 
-            <div class="education-left">
+                <div class="education-left">
 
 
-                <div class="education-degree"
-                     th:if="${education.degree != null
+                    <div class="education-degree"
+                         th:if="${education.degree != null
                              and !education.degree.isEmpty()}"
-                     th:text="${education.degree}">
+                         th:text="${education.degree}">
 
-                    B.Tech in Electronics &amp;
-                    Telecommunication Engineering
+                        B.Tech in Electronics &amp;
+                        Telecommunication Engineering
 
-                </div>
+                    </div>
 
 
-                <div class="education-details">
+                    <div class="education-details">
 
 
                     <span th:if="${education.institution != null
@@ -893,7 +911,7 @@
                     </span>
 
 
-                    <span th:if="${education.location != null
+                        <span th:if="${education.location != null
                                   and !education.location.isEmpty()}">
 
                         ,
@@ -905,7 +923,7 @@
                     </span>
 
 
-                    <span th:if="${education.score != null
+                        <span th:if="${education.score != null
                                   and !education.score.isEmpty()}">
 
                         |
@@ -917,13 +935,13 @@
                     </span>
 
 
+                    </div>
+
+
                 </div>
 
 
-            </div>
-
-
-            <div class="education-date">
+                <div class="education-date">
 
 
                 <span th:if="${education.startYear != null
@@ -935,7 +953,7 @@
                 </span>
 
 
-                <span th:if="${education.endYear != null
+                    <span th:if="${education.endYear != null
                               and !education.endYear.isEmpty()}">
 
                     –
@@ -947,50 +965,54 @@
                 </span>
 
 
+                </div>
+
+
             </div>
 
 
         </div>
 
 
-    </div>
 
 
 
-    <!-- =====================================================
-         TECHNICAL SKILLS
+        <!-- =====================================================
+             TECHNICAL SKILLS
 
-         FILLED CIRCLE = U+2022
-         ===================================================== -->
+             FILLED CIRCLE = U+2022
+             ===================================================== -->
 
-    <div class="section"
-         th:if="${resume.skills != null
+        <div class="section"
+             th:if="${sectionKey == 'skills'
+                 and resume.skills != null
                  and !resume.skills.isEmpty()}">
 
 
-        <div class="section-title">
-            Technical Skills
-        </div>
+            <div class="section-title"
+                 th:text="${resume.skillsTitle}">
+                Technical Skills
+            </div>
 
 
-        <table class="skills-table">
+            <table class="skills-table">
 
 
-            <tr th:each="skill : ${resume.skills}">
+                <tr th:each="skill : ${resume.skills}">
 
 
-                <!-- FILLED CIRCLE -->
+                    <!-- FILLED CIRCLE -->
 
-                <td class="skills-bullet">
+                    <td class="skills-bullet">
 
-                    •
+                        •
 
-                </td>
+                    </td>
 
 
-                <!-- CATEGORY -->
+                    <!-- CATEGORY -->
 
-                <td class="skills-category">
+                    <td class="skills-category">
 
                     <span th:if="${skill.category != null
                                   and !skill.category.isEmpty()}"
@@ -1000,12 +1022,12 @@
 
                     </span>
 
-                </td>
+                    </td>
 
 
-                <!-- VALUES -->
+                    <!-- VALUES -->
 
-                <td class="skills-values">
+                    <td class="skills-values">
 
                     <span th:if="${skill.skillValues != null
                                   and !skill.skillValues.isEmpty()}"
@@ -1015,68 +1037,75 @@
 
                     </span>
 
-                </td>
+                    </td>
 
 
-            </tr>
+                </tr>
 
 
-        </table>
+            </table>
 
 
-    </div>
+        </div>
 
 
 
-    <!-- =====================================================
-         PROJECTS
 
-         IMPORTANT:
 
-         The original description is rendered into a hidden
-         temporary area.
+        <!-- =====================================================
+             PROJECTS
 
-         JavaScript reads the LI elements and creates:
+             IMPORTANT:
 
-         ○ description
-         ○ description
-         ○ description
+             The original description is rendered into a hidden
+             temporary area.
 
-         The original UL/OL is then completely removed.
-         ===================================================== -->
+             JavaScript reads the LI elements and creates:
 
-    <div class="section"
-         th:if="${resume.projects != null
+             ○ description
+             ○ description
+             ○ description
+
+             The original UL/OL is then completely removed.
+             ===================================================== -->
+
+        <div class="section"
+             th:if="${sectionKey == 'projects'
+                 and resume.projects != null
                  and !resume.projects.isEmpty()}">
 
 
-        <div class="section-title">
-            Projects
-        </div>
+            <div class="section-title"
+                 th:text="${resume.projectsTitle}">
+                Projects
+            </div>
 
 
-        <div th:each="project : ${resume.projects}"
-             class="project-item">
+            <div th:each="project : ${resume.projects}"
+                 class="project-item">
 
 
-            <!-- PROJECT NAME -->
+                <!-- PROJECT NAME -->
 
-            <div class="project-name"
-                 th:if="${project.projectName != null
+                <div class="project-name"
+                     th:if="${project.projectName != null
                          and !project.projectName.isEmpty()}"
-                 th:text="${project.projectName}">
+                     th:text="${project.projectName}">
 
-                Commercial Website with Stripe Payments
+                    Commercial Website with Stripe Payments
 
-            </div>
+                </div>
 
 
-            <!-- PROJECT DESCRIPTION -->
+                <!-- PROJECT DESCRIPTION -->
 
-            <div class="project-description"
-                 th:if="${project.description != null
+                <div class="project-description"
+                     th:if="${project.description != null
                          and !project.description.isEmpty()}"
-                 th:utext="${project.description}">
+                     th:utext="${project.description}">
+
+                </div>
+
 
             </div>
 
@@ -1084,45 +1113,46 @@
         </div>
 
 
-    </div>
 
 
 
-    <!-- =====================================================
-         CERTIFICATIONS
+        <!-- =====================================================
+             CERTIFICATIONS
 
-         FILLED CIRCLE = U+2022
-         DATE = FAR RIGHT
-         ===================================================== -->
+             FILLED CIRCLE = U+2022
+             DATE = FAR RIGHT
+             ===================================================== -->
 
-    <div class="section"
-         th:if="${resume.certifications != null
+        <div class="section"
+             th:if="${sectionKey == 'certifications'
+                 and resume.certifications != null
                  and !resume.certifications.isEmpty()}">
 
 
-        <div class="section-title">
-            Certifications
-        </div>
+            <div class="section-title"
+                 th:text="${resume.certificationsTitle}">
+                Certifications
+            </div>
 
 
-        <table class="certifications-table">
+            <table class="certifications-table">
 
 
-            <tr th:each="certification : ${resume.certifications}">
+                <tr th:each="certification : ${resume.certifications}">
 
 
-                <!-- FILLED CIRCLE -->
+                    <!-- FILLED CIRCLE -->
 
-                <td class="certification-bullet">
+                    <td class="certification-bullet">
 
-                    •
+                        •
 
-                </td>
+                    </td>
 
 
-                <!-- CERTIFICATION -->
+                    <!-- CERTIFICATION -->
 
-                <td class="certification-name">
+                    <td class="certification-name">
 
 
                     <span th:if="${certification.name != null
@@ -1134,7 +1164,7 @@
                     </span>
 
 
-                    <span th:if="${certification.organization != null
+                        <span th:if="${certification.organization != null
                                   and !certification.organization.isEmpty()}">
 
                         -
@@ -1148,12 +1178,12 @@
                     </span>
 
 
-                </td>
+                    </td>
 
 
-                <!-- DATE -->
+                    <!-- DATE -->
 
-                <td class="certification-date">
+                    <td class="certification-date">
 
                     <span th:if="${certification.date != null
                                   and !certification.date.isEmpty()}"
@@ -1163,17 +1193,20 @@
 
                     </span>
 
-                </td>
+                    </td>
 
 
-            </tr>
+                </tr>
 
 
-        </table>
+            </table>
+
+
+        </div>
+
 
 
     </div>
-
 
 </div>
 

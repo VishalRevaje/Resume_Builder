@@ -5,52 +5,105 @@ import com.resume.resume_builder.entity.Education;
 import com.resume.resume_builder.entity.Project;
 import com.resume.resume_builder.entity.Resume;
 import com.resume.resume_builder.entity.Skill;
+import com.resume.resume_builder.entity.User;
+
 import com.resume.resume_builder.repository.ResumeRepository;
+import com.resume.resume_builder.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Service
 public class ResumeService {
 
+
     private final ResumeRepository resumeRepository;
 
+    private final UserRepository userRepository;
 
-    public ResumeService(ResumeRepository resumeRepository) {
+
+    public ResumeService(
+            ResumeRepository resumeRepository,
+            UserRepository userRepository) {
+
         this.resumeRepository = resumeRepository;
+
+        this.userRepository = userRepository;
     }
 
 
+    // =====================================================
+    // SAVE RESUME
+    // =====================================================
+
     @Transactional
-    public Resume saveResume(Resume resume) {
+    public Resume saveResume(
+            Resume resume,
+            String userEmail) {
+
+
+        User user =
+                userRepository
+                        .findByEmailIgnoreCase(userEmail)
+                        .orElseThrow(
+                                () ->
+                                        new RuntimeException(
+                                                "User not found"
+                                        )
+                        );
+
+
+        /*
+         * Always assign the logged-in user.
+         *
+         * This is important because we don't trust
+         * user information coming from the HTML form.
+         */
+
+        resume.setUser(user);
+
+
+        // Education
 
         if (resume.getEducations() != null) {
 
-            for (Education education : resume.getEducations()) {
+            for (Education education :
+                    resume.getEducations()) {
 
                 education.setResume(resume);
             }
         }
 
 
+        // Skills
+
         if (resume.getSkills() != null) {
 
-            for (Skill skill : resume.getSkills()) {
+            for (Skill skill :
+                    resume.getSkills()) {
 
                 skill.setResume(resume);
             }
         }
 
 
+        // Projects
+
         if (resume.getProjects() != null) {
 
-            for (Project project : resume.getProjects()) {
+            for (Project project :
+                    resume.getProjects()) {
 
                 project.setResume(resume);
             }
         }
 
+
+        // Certifications
 
         if (resume.getCertifications() != null) {
 
@@ -66,26 +119,70 @@ public class ResumeService {
     }
 
 
-    public Resume getResumeById(Long id) {
+    // =====================================================
+    // GET RESUME OF CURRENT USER
+    // =====================================================
 
-        return resumeRepository.findById(id)
+    @Transactional(readOnly = true)
+    public Resume getResumeById(
+            Long id,
+            String userEmail) {
+
+
+        return resumeRepository
+                .findByIdAndUserEmailIgnoreCase(
+                        id,
+                        userEmail
+                )
                 .orElseThrow(
-                        () -> new RuntimeException(
-                                "Resume not found with id: " + id
-                        )
+                        () ->
+                                new RuntimeException(
+                                        "Resume not found"
+                                )
                 );
     }
 
 
-    public List<Resume> getAllResumes() {
+    // =====================================================
+    // GET ALL RESUMES OF CURRENT USER
+    // =====================================================
 
-        return resumeRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<Resume> getAllResumesForUser(
+            String userEmail) {
+
+
+        return resumeRepository
+                .findAllByUserEmailIgnoreCase(
+                        userEmail
+                );
     }
 
 
-    @Transactional
-    public void deleteResume(Long id) {
+    // =====================================================
+    // DELETE RESUME OF CURRENT USER
+    // =====================================================
 
-        resumeRepository.deleteById(id);
+    @Transactional
+    public void deleteResume(
+            Long id,
+            String userEmail) {
+
+
+        Resume resume =
+                resumeRepository
+                        .findByIdAndUserEmailIgnoreCase(
+                                id,
+                                userEmail
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new RuntimeException(
+                                                "Resume not found"
+                                        )
+                        );
+
+
+        resumeRepository.delete(resume);
     }
 }

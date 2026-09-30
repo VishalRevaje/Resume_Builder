@@ -246,12 +246,226 @@
         }
 
 
+        /* =====================================================
+           RESUME SECTION MANAGER
+           ===================================================== */
+
+        .section-manager {
+
+            width: 100%;
+
+            margin-bottom: 30px;
+
+            padding: 20px;
+
+            box-sizing: border-box;
+
+            background: #f8f9fa;
+
+            border: 1px solid #d9d9d9;
+
+            border-radius: 10px;
+        }
+
+
+        .section-manager-header {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 15px;
+        }
+
+
+        .section-manager-header h2 {
+
+            margin: 0 0 5px 0;
+
+            font-size: 20px;
+        }
+
+
+        .section-manager-header p {
+
+            margin: 0;
+
+            color: #666;
+
+            font-size: 13px;
+        }
+
+
+        .section-manager-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+            width: 100%;
+        }
+
+
+        .section-manager-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            width: 100%;
+
+            min-height: 65px;
+
+            padding: 10px 12px;
+
+            box-sizing: border-box;
+
+            background: #ffffff;
+
+            border: 1px solid #d4d4d4;
+
+            border-radius: 7px;
+
+            cursor: grab;
+
+            transition:
+                    opacity 0.15s ease,
+                    background 0.15s ease,
+                    border-color 0.15s ease,
+                    transform 0.15s ease;
+        }
+
+
+        .section-manager-item:hover {
+
+            border-color: #999;
+
+            background: #fafafa;
+        }
+
+
+        .section-manager-item.dragging {
+
+            opacity: 0.45;
+
+            border-style: dashed;
+
+            transform: scale(0.99);
+        }
+
+
+        .drag-handle {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            width: 30px;
+
+            min-width: 30px;
+
+            font-size: 22px;
+
+            line-height: 1;
+
+            color: #555;
+
+            cursor: grab;
+
+            user-select: none;
+        }
+
+
+        .drag-handle:active {
+
+            cursor: grabbing;
+        }
+
+
+        .section-manager-content {
+
+            flex: 1;
+
+            min-width: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 5px;
+        }
+
+
+        .section-manager-content label {
+
+            display: block;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #444;
+        }
+
+
+        .section-manager-content input {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 8px 10px;
+
+            font-size: 14px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+
+            outline: none;
+        }
+
+
+        .section-manager-content input:focus {
+
+            border-color: #777;
+
+            box-shadow:
+                    0 0 0 2px
+                    rgba(0, 0, 0, 0.05);
+        }
+
+
+        .resume-edit-section {
+
+            width: 100%;
+        }
+
+
         @media(max-width: 700px) {
 
             .two-column,
             .three-column {
 
                 grid-template-columns: 1fr;
+            }
+
+            .section-manager-item {
+
+                align-items: flex-start;
+            }
+
+            .drag-handle {
+
+                padding-top: 8px;
             }
 
         }
@@ -458,331 +672,624 @@
 
 
         <!-- =================================================
-             PROFESSIONAL SUMMARY
+             RESUME SECTION MANAGER
              ================================================= -->
 
-        <h2>
-            Professional Summary
-        </h2>
+        <div class="section-manager">
 
+            <div class="section-manager-header">
 
-        <div class="toolbar">
+                <div>
+                    <h2>Resume Sections</h2>
 
-            <button type="button"
-                    onclick="formatText('bold')">
-
-                B
-
-            </button>
-
-
-            <button type="button"
-                    onclick="formatText('italic')">
-
-                I
-
-            </button>
-
-
-            <button type="button"
-                    onclick="formatText('underline')">
-
-                U
-
-            </button>
-
-
-        </div>
-
-
-        <!-- Visible rich-text editor. The actual submitted value is kept
-             in summaryHidden and synchronized before the form is submitted. -->
-        <div id="summaryEditor"
-             class="editor"
-             contenteditable="true"
-             role="textbox"
-             aria-multiline="true"
-             data-placeholder="Write your professional summary here..."></div>
-
-
-        <!-- Spring/Thymeleaf-bound field. This is the field that is saved
-             to Resume.professionalSummary. -->
-        <textarea id="summaryHidden"
-                  th:field="*{professionalSummary}"
-                  style="display:none;"></textarea>
-
-
-        <!-- =================================================
-             EDUCATION
-             ================================================= -->
-
-        <h2>
-            Education
-        </h2>
-
-
-        <div id="educationContainer">
-
-
-            <div class="item education-item"
-                 th:each="education,stat : *{educations}">
-
-
-                <h3>
-                    Education
-                </h3>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Degree
-                    </label>
-
-                    <input type="text"
-                           th:field="*{educations[__${stat.index}__].degree}"
-                           placeholder="B.Tech in Electronics & Telecommunication Engineering">
-
+                    <p>
+                        Drag sections to change their order.
+                        You can also rename the section headings.
+                    </p>
                 </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Institution
-                    </label>
-
-                    <input type="text"
-                           th:field="*{educations[__${stat.index}__].institution}"
-                           placeholder="N.K. Orchid College of Engineering">
-
-                </div>
-
-
-                <div class="two-column">
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Location
-                        </label>
-
-                        <input type="text"
-                               th:field="*{educations[__${stat.index}__].location}"
-                               placeholder="Solapur">
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Score
-                        </label>
-
-                        <input type="text"
-                               th:field="*{educations[__${stat.index}__].score}"
-                               placeholder="CGPA: 7.03/10">
-
-                    </div>
-
-
-                </div>
-
-
-                <div class="two-column">
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Start Year
-                        </label>
-
-                        <input type="text"
-                               th:field="*{educations[__${stat.index}__].startYear}"
-                               placeholder="2021">
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            End Year
-                        </label>
-
-                        <input type="text"
-                               th:field="*{educations[__${stat.index}__].endYear}"
-                               placeholder="2024">
-
-                    </div>
-
-
-                </div>
-
-
-                <button type="button"
-                        class="remove-button"
-                        onclick="removeItem(this)">
-
-                    Remove Education
-
-                </button>
-
 
             </div>
 
+            <input type="hidden"
+                   id="sectionOrder"
+                   th:field="*{sectionOrder}">
 
-        </div>
+            <div id="sectionManager"
+                 class="section-manager-list">
 
+                <div class="section-manager-item"
+                     data-section-key="summary"
+                     draggable="true">
 
-        <button type="button"
-                onclick="addEducation()">
+                    <div class="drag-handle"
+                         title="Drag to reorder">
+                        ☰
+                    </div>
 
-            + Add Education
+                    <div class="section-manager-content">
 
-        </button>
-
-
-        <!-- =================================================
-             SKILLS
-             ================================================= -->
-
-        <h2>
-            Technical Skills
-        </h2>
-
-
-        <div id="skillsContainer">
-
-
-            <div class="item"
-                 th:each="skill,stat : *{skills}">
-
-
-                <div class="two-column">
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Category
+                        <label for="summaryTitle">
+                            Section Heading
                         </label>
 
                         <input type="text"
-                               th:field="*{skills[__${stat.index}__].category}"
-                               placeholder="Programming Languages">
+                               id="summaryTitle"
+                               th:field="*{summaryTitle}"
+                               placeholder="Professional Summary">
 
                     </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Skills
-                        </label>
-
-                        <input type="text"
-                               th:field="*{skills[__${stat.index}__].skillValues}"
-                               placeholder="C, Java, Python, SQL">
-
-                    </div>
-
 
                 </div>
 
 
-                <button type="button"
-                        class="remove-button"
-                        onclick="removeItem(this)">
+                <div class="section-manager-item"
+                     data-section-key="education"
+                     draggable="true">
 
-                    Remove Skill
+                    <div class="drag-handle"
+                         title="Drag to reorder">
+                        ☰
+                    </div>
 
-                </button>
+                    <div class="section-manager-content">
 
+                        <label for="educationTitle">
+                            Section Heading
+                        </label>
+
+                        <input type="text"
+                               id="educationTitle"
+                               th:field="*{educationTitle}"
+                               placeholder="Education">
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-manager-item"
+                     data-section-key="skills"
+                     draggable="true">
+
+                    <div class="drag-handle"
+                         title="Drag to reorder">
+                        ☰
+                    </div>
+
+                    <div class="section-manager-content">
+
+                        <label for="skillsTitle">
+                            Section Heading
+                        </label>
+
+                        <input type="text"
+                               id="skillsTitle"
+                               th:field="*{skillsTitle}"
+                               placeholder="Technical Skills">
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-manager-item"
+                     data-section-key="projects"
+                     draggable="true">
+
+                    <div class="drag-handle"
+                         title="Drag to reorder">
+                        ☰
+                    </div>
+
+                    <div class="section-manager-content">
+
+                        <label for="projectsTitle">
+                            Section Heading
+                        </label>
+
+                        <input type="text"
+                               id="projectsTitle"
+                               th:field="*{projectsTitle}"
+                               placeholder="Projects">
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-manager-item"
+                     data-section-key="certifications"
+                     draggable="true">
+
+                    <div class="drag-handle"
+                         title="Drag to reorder">
+                        ☰
+                    </div>
+
+                    <div class="section-manager-content">
+
+                        <label for="certificationsTitle">
+                            Section Heading
+                        </label>
+
+                        <input type="text"
+                               id="certificationsTitle"
+                               th:field="*{certificationsTitle}"
+                               placeholder="Certifications">
+
+                    </div>
+
+                </div>
 
             </div>
 
-
         </div>
 
 
-        <button type="button"
-                onclick="addSkill()">
-
-            + Add Skill
-
-        </button>
+        <div id="resumeSectionsContainer">
 
 
-        <!-- =================================================
-             PROJECTS
-             ================================================= -->
+            <div
+                    class="resume-edit-section"
+                    data-section-key="summary"
+            >
 
-        <h2>
-            Projects
-        </h2>
+                <!-- =================================================
+                     PROFESSIONAL SUMMARY
+                     ================================================= -->
 
-
-        <div id="projectsContainer">
-
-
-            <div class="item"
-                 th:each="project,stat : *{projects}">
-
-
-                <div class="form-group">
-
-                    <label>
-                        Project Name
-                    </label>
-
-                    <input type="text"
-                           th:field="*{projects[__${stat.index}__].projectName}"
-                           placeholder="Commercial Website with Stripe Payments">
-
-                </div>
-
-
-                <label>
-                    Project Description
-                </label>
+                <h2 id="section-title-summary">
+                    Professional Summary
+                </h2>
 
 
                 <div class="toolbar">
 
                     <button type="button"
                             onclick="formatText('bold')">
+
                         B
+
                     </button>
+
 
                     <button type="button"
                             onclick="formatText('italic')">
+
                         I
+
                     </button>
+
 
                     <button type="button"
                             onclick="formatText('underline')">
+
                         U
+
                     </button>
+
 
                 </div>
 
 
-                <textarea
-                        th:field="*{projects[__${stat.index}__].description}"
-                        rows="7"
-                        placeholder="Describe the project...">
+                <!-- Visible rich-text editor. The actual submitted value is kept
+                     in summaryHidden and synchronized before the form is submitted. -->
+                <div id="summaryEditor"
+                     class="editor"
+                     contenteditable="true"
+                     role="textbox"
+                     aria-multiline="true"
+                     data-placeholder="Write your professional summary here..."></div>
+
+
+                <!-- Spring/Thymeleaf-bound field. This is the field that is saved
+                     to Resume.professionalSummary. -->
+                <textarea id="summaryHidden"
+                          th:field="*{professionalSummary}"
+                          style="display:none;"></textarea>
+
+
+            </div>
+
+
+            <div
+                    class="resume-edit-section"
+                    data-section-key="education"
+            >
+
+                <!-- =================================================
+                     EDUCATION
+                     ================================================= -->
+
+                <h2 id="section-title-education">
+                    Education
+                </h2>
+
+
+                <div id="educationContainer">
+
+
+                    <div class="item education-item"
+                         th:each="education,stat : *{educations}">
+
+
+                        <h3>
+                            Education
+                        </h3>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Degree
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{educations[__${stat.index}__].degree}"
+                                   placeholder="B.Tech in Electronics & Telecommunication Engineering">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Institution
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{educations[__${stat.index}__].institution}"
+                                   placeholder="N.K. Orchid College of Engineering">
+
+                        </div>
+
+
+                        <div class="two-column">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Location
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{educations[__${stat.index}__].location}"
+                                       placeholder="Solapur">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Score
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{educations[__${stat.index}__].score}"
+                                       placeholder="CGPA: 7.03/10">
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="two-column">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Start Year
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{educations[__${stat.index}__].startYear}"
+                                       placeholder="2021">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    End Year
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{educations[__${stat.index}__].endYear}"
+                                       placeholder="2024">
+
+                            </div>
+
+
+                        </div>
+
+
+                        <button type="button"
+                                class="remove-button"
+                                onclick="removeItem(this)">
+
+                            Remove Education
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <button type="button"
+                        onclick="addEducation()">
+
+                    + Add Education
+
+                </button>
+
+
+            </div>
+
+
+            <div
+                    class="resume-edit-section"
+                    data-section-key="skills"
+            >
+
+                <!-- =================================================
+                     SKILLS
+                     ================================================= -->
+
+                <h2 id="section-title-skills">
+                    Technical Skills
+                </h2>
+
+
+                <div id="skillsContainer">
+
+
+                    <div class="item"
+                         th:each="skill,stat : *{skills}">
+
+
+                        <div class="two-column">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Category
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{skills[__${stat.index}__].category}"
+                                       placeholder="Programming Languages">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Skills
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{skills[__${stat.index}__].skillValues}"
+                                       placeholder="C, Java, Python, SQL">
+
+                            </div>
+
+
+                        </div>
+
+
+                        <button type="button"
+                                class="remove-button"
+                                onclick="removeItem(this)">
+
+                            Remove Skill
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <button type="button"
+                        onclick="addSkill()">
+
+                    + Add Skill
+
+                </button>
+
+
+            </div>
+
+
+            <div
+                    class="resume-edit-section"
+                    data-section-key="projects"
+            >
+
+                <!-- =================================================
+                     PROJECTS
+                     ================================================= -->
+
+                <h2 id="section-title-projects">
+                    Projects
+                </h2>
+
+
+                <div id="projectsContainer">
+
+
+                    <div class="item"
+                         th:each="project,stat : *{projects}">
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Project Name
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{projects[__${stat.index}__].projectName}"
+                                   placeholder="Commercial Website with Stripe Payments">
+
+                        </div>
+
+
+                        <label>
+                            Project Description
+                        </label>
+
+
+                        <div class="toolbar">
+
+                            <button type="button"
+                                    onclick="formatText('bold')">
+                                B
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('italic')">
+                                I
+                            </button>
+
+                            <button type="button"
+                                    onclick="formatText('underline')">
+                                U
+                            </button>
+
+                        </div>
+
+
+                        <textarea
+                                th:field="*{projects[__${stat.index}__].description}"
+                                rows="7"
+                                placeholder="Describe the project...">
                 </textarea>
 
 
-                <button type="button"
-                        class="remove-button"
-                        onclick="removeItem(this)">
+                        <button type="button"
+                                class="remove-button"
+                                onclick="removeItem(this)">
 
-                    Remove Project
+                            Remove Project
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <button type="button"
+                        onclick="addProject()">
+
+                    + Add Project
+
+                </button>
+
+
+            </div>
+
+
+            <div
+                    class="resume-edit-section"
+                    data-section-key="certifications"
+            >
+
+                <!-- =================================================
+                     CERTIFICATIONS
+                     ================================================= -->
+
+                <h2 id="section-title-certifications">
+                    Certifications
+                </h2>
+
+
+                <div id="certificationsContainer">
+
+
+                    <div class="item"
+                         th:each="certification,stat : *{certifications}">
+
+
+                        <div class="two-column">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Certification Name
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{certifications[__${stat.index}__].name}"
+                                       placeholder="Java Spring Boot Full Stack">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Organization
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{certifications[__${stat.index}__].organization}"
+                                       placeholder="Udemy">
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Date
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{certifications[__${stat.index}__].date}"
+                                   placeholder="June 2025">
+
+                        </div>
+
+
+                        <button type="button"
+                                class="remove-button"
+                                onclick="removeItem(this)">
+
+                            Remove Certification
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <button type="button"
+                        onclick="addCertification()">
+
+                    + Add Certification
 
                 </button>
 
@@ -791,98 +1298,6 @@
 
 
         </div>
-
-
-        <button type="button"
-                onclick="addProject()">
-
-            + Add Project
-
-        </button>
-
-
-        <!-- =================================================
-             CERTIFICATIONS
-             ================================================= -->
-
-        <h2>
-            Certifications
-        </h2>
-
-
-        <div id="certificationsContainer">
-
-
-            <div class="item"
-                 th:each="certification,stat : *{certifications}">
-
-
-                <div class="two-column">
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Certification Name
-                        </label>
-
-                        <input type="text"
-                               th:field="*{certifications[__${stat.index}__].name}"
-                               placeholder="Java Spring Boot Full Stack">
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Organization
-                        </label>
-
-                        <input type="text"
-                               th:field="*{certifications[__${stat.index}__].organization}"
-                               placeholder="Udemy">
-
-                    </div>
-
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Date
-                    </label>
-
-                    <input type="text"
-                           th:field="*{certifications[__${stat.index}__].date}"
-                           placeholder="June 2025">
-
-                </div>
-
-
-                <button type="button"
-                        class="remove-button"
-                        onclick="removeItem(this)">
-
-                    Remove Certification
-
-                </button>
-
-
-            </div>
-
-
-        </div>
-
-
-        <button type="button"
-                onclick="addCertification()">
-
-            + Add Certification
-
-        </button>
 
 
         <!-- =================================================
@@ -892,19 +1307,19 @@
         <div class="actions">
 
 
+            <button type="submit"
+                    class="save-button">
+
+                Save Resume
+
+            </button>
+
+
             <button type="button"
                     class="preview-button"
                     onclick="previewResume()">
 
                 Preview Resume
-
-            </button>
-
-
-            <button type="submit"
-                    class="save-button">
-
-                Save Resume
 
             </button>
 
@@ -1007,7 +1422,12 @@
 
         summaryEditor.addEventListener(
             "input",
-            updateSummaryPlaceholder
+            function () {
+
+                syncProfessionalSummary();
+                updateSummaryPlaceholder();
+
+            }
         );
 
         summaryEditor.addEventListener(
@@ -1412,6 +1832,429 @@
     }
 
 
+
+
+    /* =====================================================
+       RESUME SECTION MANAGER
+       ===================================================== */
+
+    let draggedSection = null;
+
+
+    function initializeSectionManager() {
+
+        const manager =
+            document.getElementById(
+                "sectionManager"
+            );
+
+
+        if (!manager) {
+            return;
+        }
+
+
+        const items =
+            manager.querySelectorAll(
+                ".section-manager-item"
+            );
+
+
+        items.forEach(
+            function (item) {
+
+                item.addEventListener(
+                    "dragstart",
+                    function () {
+
+                        draggedSection = item;
+
+                        item.classList.add(
+                            "dragging"
+                        );
+                    }
+                );
+
+
+                item.addEventListener(
+                    "dragend",
+                    function () {
+
+                        item.classList.remove(
+                            "dragging"
+                        );
+
+                        draggedSection = null;
+
+                        updateSectionOrder();
+
+                        reorderResumeSections();
+                    }
+                );
+
+
+                item.addEventListener(
+                    "dragover",
+                    function (event) {
+
+                        event.preventDefault();
+
+
+                        if (
+                            !draggedSection
+                            ||
+                            draggedSection === item
+                        ) {
+                            return;
+                        }
+
+
+                        const rect =
+                            item.getBoundingClientRect();
+
+
+                        const middle =
+                            rect.top +
+                            (rect.height / 2);
+
+
+                        if (
+                            event.clientY < middle
+                        ) {
+
+                            manager.insertBefore(
+                                draggedSection,
+                                item
+                            );
+
+                        } else {
+
+                            manager.insertBefore(
+                                draggedSection,
+                                item.nextSibling
+                            );
+                        }
+                    }
+                );
+            }
+        );
+
+
+        restoreSavedSectionOrder();
+
+        updateSectionOrder();
+
+        reorderResumeSections();
+    }
+
+
+    function restoreSavedSectionOrder() {
+
+        const manager =
+            document.getElementById(
+                "sectionManager"
+            );
+
+
+        const hiddenInput =
+            document.getElementById(
+                "sectionOrder"
+            );
+
+
+        if (!manager || !hiddenInput) {
+            return;
+        }
+
+
+        const savedOrder =
+            hiddenInput.value;
+
+
+        if (
+            !savedOrder
+            ||
+            savedOrder.trim() === ""
+        ) {
+            return;
+        }
+
+
+        const order =
+            savedOrder
+                .split(",")
+                .map(
+                    function (value) {
+                        return value.trim();
+                    }
+                )
+                .filter(
+                    function (value) {
+                        return value.length > 0;
+                    }
+                );
+
+
+        order.forEach(
+            function (sectionKey) {
+
+                const item =
+                    manager.querySelector(
+                        '[data-section-key="' +
+                        sectionKey +
+                        '"]'
+                    );
+
+
+                if (item) {
+                    manager.appendChild(item);
+                }
+            }
+        );
+    }
+
+
+    function updateSectionOrder() {
+
+        const manager =
+            document.getElementById(
+                "sectionManager"
+            );
+
+
+        const hiddenInput =
+            document.getElementById(
+                "sectionOrder"
+            );
+
+
+        if (!manager || !hiddenInput) {
+            return;
+        }
+
+
+        const items =
+            manager.querySelectorAll(
+                ".section-manager-item"
+            );
+
+
+        const order =
+            Array.from(items)
+                .map(
+                    function (item) {
+                        return item.dataset.sectionKey;
+                    }
+                )
+                .join(",");
+
+
+        hiddenInput.value = order;
+    }
+
+
+    function reorderResumeSections() {
+
+        const manager =
+            document.getElementById(
+                "sectionManager"
+            );
+
+
+        const sectionsContainer =
+            document.getElementById(
+                "resumeSectionsContainer"
+            );
+
+
+        if (!manager || !sectionsContainer) {
+            return;
+        }
+
+
+        const items =
+            manager.querySelectorAll(
+                ".section-manager-item"
+            );
+
+
+        items.forEach(
+            function (item) {
+
+                const sectionKey =
+                    item.dataset.sectionKey;
+
+
+                const section =
+                    sectionsContainer.querySelector(
+                        '.resume-edit-section[data-section-key="' +
+                        sectionKey +
+                        '"]'
+                    );
+
+
+                if (section) {
+                    sectionsContainer.appendChild(
+                        section
+                    );
+                }
+            }
+        );
+    }
+
+
+    function updateSectionTitle(
+        sectionKey,
+        value
+    ) {
+
+        const title =
+            document.getElementById(
+                "section-title-" +
+                sectionKey
+            );
+
+
+        if (!title) {
+            return;
+        }
+
+
+        const defaultTitles = {
+
+            summary:
+                "Professional Summary",
+
+            education:
+                "Education",
+
+            skills:
+                "Technical Skills",
+
+            projects:
+                "Projects",
+
+            certifications:
+                "Certifications"
+        };
+
+
+        const cleanValue =
+            value.trim();
+
+
+        title.textContent =
+            cleanValue.length > 0
+                ? cleanValue
+                : defaultTitles[sectionKey];
+    }
+
+
+    function initializeSectionTitleInputs() {
+
+        const fields = [
+
+            {
+                id: "summaryTitle",
+                key: "summary"
+            },
+
+            {
+                id: "educationTitle",
+                key: "education"
+            },
+
+            {
+                id: "skillsTitle",
+                key: "skills"
+            },
+
+            {
+                id: "projectsTitle",
+                key: "projects"
+            },
+
+            {
+                id: "certificationsTitle",
+                key: "certifications"
+            }
+        ];
+
+
+        fields.forEach(
+            function (field) {
+
+                const input =
+                    document.getElementById(
+                        field.id
+                    );
+
+
+                if (!input) {
+                    return;
+                }
+
+
+                input.addEventListener(
+                    "input",
+                    function () {
+
+                        updateSectionTitle(
+                            field.key,
+                            input.value
+                        );
+                    }
+                );
+
+
+                updateSectionTitle(
+                    field.key,
+                    input.value
+                );
+            }
+        );
+    }
+
+
+    function prepareSectionDataBeforeSubmit() {
+
+        updateSectionOrder();
+
+        reorderResumeSections();
+    }
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            initializeSectionManager();
+
+            initializeSectionTitleInputs();
+
+
+            const form =
+                document.getElementById(
+                    "resumeForm"
+                );
+
+
+            if (form) {
+
+                form.addEventListener(
+                    "submit",
+                    function () {
+
+                        syncProfessionalSummary();
+
+                        prepareSectionDataBeforeSubmit();
+                    }
+                );
+            }
+        }
+    );
+
+
     /* =====================================================
        PREVIEW
        ===================================================== */
@@ -1420,6 +2263,18 @@
 
         const form =
             document.getElementById("resumeForm");
+
+
+        // Synchronize the rich-text Professional Summary before
+        // submitting. form.submit() bypasses the normal submit event,
+        // so this must be done explicitly here.
+        syncProfessionalSummary();
+
+
+        // Synchronize section order before preview.
+        updateSectionOrder();
+
+        reorderResumeSections();
 
 
         // Save first, then the controller redirects

@@ -5,188 +5,268 @@ import com.resume.resume_builder.entity.Education;
 import com.resume.resume_builder.entity.Project;
 import com.resume.resume_builder.entity.Resume;
 import com.resume.resume_builder.entity.Skill;
+
 import com.resume.resume_builder.service.ResumeService;
+
+import org.springframework.security.core.Authentication;
+
 import org.springframework.stereotype.Controller;
+
 import org.springframework.ui.Model;
+
 import org.springframework.web.bind.annotation.*;
+
 
 @Controller
 public class ResumeController {
 
+
     private final ResumeService resumeService;
 
 
-    public ResumeController(ResumeService resumeService) {
+    public ResumeController(
+            ResumeService resumeService) {
 
         this.resumeService = resumeService;
     }
 
 
-    /* =====================================================
-       HOME
-       ===================================================== */
-
-
-
-    /* =====================================================
-       CREATE
-       ===================================================== */
+    // =====================================================
+    // CREATE
+    // =====================================================
 
     @GetMapping("/resumes/new")
-    public String createResume(Model model) {
+    public String createResume(
+            Model model) {
+
 
         Resume resume = new Resume();
 
-        resume.setFontFamily("Arial");
 
-        resume.setFontSize(11);
-
-
-        // Add one empty record of every section
-
-        resume.getEducations().add(new Education());
-
-        resume.getSkills().add(new Skill());
-
-        resume.getProjects().add(new Project());
-
-        resume.getCertifications().add(new Certification());
-
-
-        model.addAttribute("resume", resume);
-
-        return "resume-form";
-    }
-
-
-    /* =====================================================
-       SAVE
-       ===================================================== */
-
-    @PostMapping("/resumes/save")
-    public String saveResume(
-            @ModelAttribute("resume") Resume resume) {
-
-
-        // Remove empty education records
-
-        resume.getEducations().removeIf(
-                education ->
-                        isEmpty(education.getDegree())
-                                &&
-                                isEmpty(education.getInstitution())
-                                &&
-                                isEmpty(education.getLocation())
-                                &&
-                                isEmpty(education.getScore())
+        resume.setFontFamily(
+                "Arial"
         );
 
 
-        // Remove empty skills
-
-        resume.getSkills().removeIf(
-                skill ->
-                        isEmpty(skill.getCategory())
-                                &&
-                                isEmpty(skill.getSkillValues())
+        resume.setFontSize(
+                11
         );
 
 
-        // Remove empty projects
+        // Add one empty record
 
-        resume.getProjects().removeIf(
-                project ->
-                        isEmpty(project.getProjectName())
-                                &&
-                                isEmpty(project.getDescription())
-        );
+        resume.getEducations()
+                .add(new Education());
 
 
-        // Remove empty certifications
-
-        resume.getCertifications().removeIf(
-                certification ->
-                        isEmpty(certification.getName())
-                                &&
-                                isEmpty(certification.getOrganization())
-                                &&
-                                isEmpty(certification.getDate())
-        );
+        resume.getSkills()
+                .add(new Skill());
 
 
-        // Save resume
-
-        Resume savedResume =
-                resumeService.saveResume(resume);
+        resume.getProjects()
+                .add(new Project());
 
 
-        // Redirect to resume preview
+        resume.getCertifications()
+                .add(new Certification());
 
-        return "redirect:/resumes/" + savedResume.getId();
-    }
-
-
-    /* =====================================================
-       VIEW
-       ===================================================== */
-
-    @GetMapping("/resumes/{id}")
-    public String viewResume(
-            @PathVariable Long id,
-            Model model) {
-
-        Resume resume =
-                resumeService.getResumeById(id);
 
         model.addAttribute(
                 "resume",
                 resume
         );
+
+
+        return "resume-form";
+    }
+
+
+    // =====================================================
+    // SAVE
+    // =====================================================
+
+    @PostMapping("/resumes/save")
+    public String saveResume(
+            @ModelAttribute("resume")
+            Resume resume,
+
+            Authentication authentication) {
+
+
+        // Remove empty education records
+
+        resume.getEducations()
+                .removeIf(
+                        education ->
+                                isEmpty(
+                                        education.getDegree()
+                                )
+                                        &&
+                                        isEmpty(
+                                                education.getInstitution()
+                                        )
+                                        &&
+                                        isEmpty(
+                                                education.getLocation()
+                                        )
+                                        &&
+                                        isEmpty(
+                                                education.getScore()
+                                        )
+                );
+
+
+        // Remove empty skills
+
+        resume.getSkills()
+                .removeIf(
+                        skill ->
+                                isEmpty(
+                                        skill.getCategory()
+                                )
+                                        &&
+                                        isEmpty(
+                                                skill.getSkillValues()
+                                        )
+                );
+
+
+        // Remove empty projects
+
+        resume.getProjects()
+                .removeIf(
+                        project ->
+                                isEmpty(
+                                        project.getProjectName()
+                                )
+                                        &&
+                                        isEmpty(
+                                                project.getDescription()
+                                        )
+                );
+
+
+        // Remove empty certifications
+
+        resume.getCertifications()
+                .removeIf(
+                        certification ->
+                                isEmpty(
+                                        certification.getName()
+                                )
+                                        &&
+                                        isEmpty(
+                                                certification.getOrganization()
+                                        )
+                                        &&
+                                        isEmpty(
+                                                certification.getDate()
+                                        )
+                );
+
+
+        // Save with logged-in user
+
+        Resume savedResume =
+                resumeService.saveResume(
+                        resume,
+                        authentication.getName()
+                );
+
+
+        return "redirect:/resumes/"
+                + savedResume.getId();
+    }
+
+
+    // =====================================================
+    // VIEW
+    // =====================================================
+
+    @GetMapping("/resumes/{id}")
+    public String viewResume(
+            @PathVariable Long id,
+
+            Model model,
+
+            Authentication authentication) {
+
+
+        Resume resume =
+                resumeService.getResumeById(
+                        id,
+                        authentication.getName()
+                );
+
+
+        model.addAttribute(
+                "resume",
+                resume
+        );
+
 
         return "resume-preview";
     }
 
 
-    /* =====================================================
-       EDIT
-       ===================================================== */
+    // =====================================================
+    // EDIT
+    // =====================================================
 
     @GetMapping("/resumes/edit/{id}")
     public String editResume(
             @PathVariable Long id,
-            Model model) {
+
+            Model model,
+
+            Authentication authentication) {
+
 
         Resume resume =
-                resumeService.getResumeById(id);
+                resumeService.getResumeById(
+                        id,
+                        authentication.getName()
+                );
+
 
         model.addAttribute(
                 "resume",
                 resume
         );
 
+
         return "resume-form";
     }
 
 
-    /* =====================================================
-       DELETE
-       ===================================================== */
+    // =====================================================
+    // DELETE
+    // =====================================================
 
     @GetMapping("/resumes/delete/{id}")
     public String deleteResume(
-            @PathVariable Long id) {
+            @PathVariable Long id,
 
-        resumeService.deleteResume(id);
+            Authentication authentication) {
+
+
+        resumeService.deleteResume(
+                id,
+                authentication.getName()
+        );
+
 
         return "redirect:/";
     }
 
 
-    /* =====================================================
-       EMPTY CHECK
-       ===================================================== */
+    // =====================================================
+    // EMPTY CHECK
+    // =====================================================
 
-    private boolean isEmpty(String value) {
+    private boolean isEmpty(
+            String value) {
+
 
         return value == null
                 || value.trim().isEmpty();

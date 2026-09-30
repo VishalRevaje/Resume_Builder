@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.core.Authentication;
 
 import java.io.ByteArrayInputStream;
 import org.apache.pdfbox.cos.COSName;
@@ -38,9 +39,13 @@ public class PdfController {
 
     @GetMapping("/resumes/{id}/pdf")
     public ResponseEntity<byte[]> downloadPdf(
-            @PathVariable Long id) throws Exception {
+            @PathVariable Long id,
+            Authentication authentication) throws Exception {
 
-        Resume resume = resumeService.getResumeById(id);
+        Resume resume = resumeService.getResumeById(
+                id,
+                authentication.getName()
+        );
 
         ByteArrayOutputStream outputStream =
                 new ByteArrayOutputStream();
@@ -702,443 +707,482 @@ public class PdfController {
 
 
         // =========================================================
-        // PROFESSIONAL SUMMARY
-        // =========================================================
-
-        if (!isEmpty(
-                resume.getProfessionalSummary()
-        )) {
-
-            html.append("""
-                    <div class="section">
-
-                        <div class="section-title">
-                            Professional Summary
-                        </div>
-
-                        <div class="summary">
-                    """);
-
-            html.append(
-                    cleanRichText(
-                            resume.getProfessionalSummary()
-                    )
-            );
-
-            html.append("""
-                        </div>
-
-                    </div>
-                    """);
-        }
-
-
-        // =========================================================
-        // EDUCATION
-        // =========================================================
-
-        if (resume.getEducations() != null
-                && !resume.getEducations().isEmpty()) {
-
-            html.append("""
-                    <div class="section">
-
-                        <div class="section-title">
-                            Education
-                        </div>
-                    """);
-
-
-            for (var education :
-                    resume.getEducations()) {
-
-                html.append("""
-                        <table class="education-table">
-
-                            <tr>
-
-                                <td class="education-left">
-
-                                    <div class="degree">
-                        """);
-
-                html.append(
-                        safe(
-                                education.getDegree()
-                        )
-                );
-
-                html.append("""
-                                    </div>
-
-                                    <div class="education-details">
-                        """);
-
-
-                if (!isEmpty(
-                        education.getInstitution()
-                )) {
-
-                    html.append(
-                            safe(
-                                    education.getInstitution()
-                            )
-                    );
-                }
-
-
-                if (!isEmpty(
-                        education.getLocation()
-                )) {
-
-                    html.append(", ");
-
-                    html.append(
-                            safe(
-                                    education.getLocation()
-                            )
-                    );
-                }
-
-
-                if (!isEmpty(
-                        education.getScore()
-                )) {
-
-                    html.append(" | ");
-
-                    html.append(
-                            safe(
-                                    education.getScore()
-                            )
-                    );
-                }
-
-
-                html.append("""
-                                    </div>
-
-                                </td>
-
-                                <td class="education-date">
-                        """);
-
-
-                if (!isEmpty(
-                        education.getStartYear()
-                )) {
-
-                    html.append(
-                            safe(
-                                    education.getStartYear()
-                            )
-                    );
-                }
-
-
-                if (!isEmpty(
-                        education.getEndYear()
-                )) {
-
-                    html.append(" – ");
-
-                    html.append(
-                            safe(
-                                    education.getEndYear()
-                            )
-                    );
-                }
-
-
-                html.append("""
-                                </td>
-
-                            </tr>
-
-                        </table>
-                        """);
-            }
-
-
-            html.append("""
-                    </div>
-                    """);
-        }
-
-
-        // =========================================================
-        // TECHNICAL SKILLS
+        // DYNAMIC RESUME SECTIONS
         //
-        // FILLED CSS CIRCLE
+        // The order and titles are controlled by Resume.sectionOrder
+        // and the custom section-title fields.
         // =========================================================
 
-        if (resume.getSkills() != null
-                && !resume.getSkills().isEmpty()) {
+        for (String sectionKey : resume.getSectionOrderList()) {
 
-            html.append("""
-                    <div class="section">
+            switch (sectionKey) {
 
-                        <div class="section-title">
-                            Technical Skills
-                        </div>
+                // =====================================================
+                // PROFESSIONAL SUMMARY
+                // =====================================================
 
-                        <table class="skills-table">
-                    """);
+                case "summary":
+
+                    if (!isEmpty(
+                            resume.getProfessionalSummary()
+                    )) {
+
+                        html.append("""
+                                <div class="section">
+
+                                    <div class="section-title">
+                                """);
+
+                        html.append(
+                                safe(
+                                        resume.getSummaryTitle()
+                                )
+                        );
+
+                        html.append("""
+                                    </div>
+
+                                    <div class="summary">
+                                """);
+
+                        html.append(
+                                cleanRichText(
+                                        resume.getProfessionalSummary()
+                                )
+                        );
+
+                        html.append("""
+                                    </div>
+
+                                </div>
+                                """);
+                    }
+
+                    break;
 
 
-            for (var skill :
-                    resume.getSkills()) {
+                // =====================================================
+                // EDUCATION
+                // =====================================================
 
-                if (isEmpty(
-                        skill.getCategory()
-                )
-                        && isEmpty(
-                        skill.getSkillValues()
-                )) {
+                case "education":
 
-                    continue;
-                }
+                    if (resume.getEducations() != null
+                            && !resume.getEducations().isEmpty()) {
+
+                        html.append("""
+                                <div class="section">
+
+                                    <div class="section-title">
+                                """);
+
+                        html.append(
+                                safe(
+                                        resume.getEducationTitle()
+                                )
+                        );
+
+                        html.append("""
+                                    </div>
+                                """);
+
+                        for (var education :
+                                resume.getEducations()) {
+
+                            html.append("""
+                                    <table class="education-table">
+
+                                        <tr>
+
+                                            <td class="education-left">
+
+                                                <div class="degree">
+                                    """);
+
+                            html.append(
+                                    safe(
+                                            education.getDegree()
+                                    )
+                            );
+
+                            html.append("""
+                                                </div>
+
+                                                <div class="education-details">
+                                    """);
+
+                            if (!isEmpty(
+                                    education.getInstitution()
+                            )) {
+
+                                html.append(
+                                        safe(
+                                                education.getInstitution()
+                                        )
+                                );
+                            }
+
+                            if (!isEmpty(
+                                    education.getLocation()
+                            )) {
+
+                                html.append(", ");
+
+                                html.append(
+                                        safe(
+                                                education.getLocation()
+                                        )
+                                );
+                            }
+
+                            if (!isEmpty(
+                                    education.getScore()
+                            )) {
+
+                                html.append(" | ");
+
+                                html.append(
+                                        safe(
+                                                education.getScore()
+                                        )
+                                );
+                            }
+
+                            html.append("""
+                                                </div>
+
+                                            </td>
+
+                                            <td class="education-date">
+                                    """);
+
+                            if (!isEmpty(
+                                    education.getStartYear()
+                            )) {
+
+                                html.append(
+                                        safe(
+                                                education.getStartYear()
+                                        )
+                                );
+                            }
+
+                            if (!isEmpty(
+                                    education.getEndYear()
+                            )) {
+
+                                html.append(" – ");
+
+                                html.append(
+                                        safe(
+                                                education.getEndYear()
+                                        )
+                                );
+                            }
+
+                            html.append("""
+                                            </td>
+
+                                        </tr>
+
+                                    </table>
+                                    """);
+                        }
+
+                        html.append("""
+                                </div>
+                                """);
+                    }
+
+                    break;
 
 
-                html.append("""
-                            <tr>
+                // =====================================================
+                // TECHNICAL SKILLS
+                // =====================================================
 
-                                <td class="skills-bullet">
+                case "skills":
 
-                                    <span class="filled-bullet">•</span>
+                    if (resume.getSkills() != null
+                            && !resume.getSkills().isEmpty()) {
 
-                                </td>
+                        html.append("""
+                                <div class="section">
 
-                                <td class="skills-category">
-                        """);
+                                    <div class="section-title">
+                                """);
 
+                        html.append(
+                                safe(
+                                        resume.getSkillsTitle()
+                                )
+                        );
 
-                if (!isEmpty(
-                        skill.getCategory()
-                )) {
+                        html.append("""
+                                    </div>
 
-                    html.append(
-                            safe(
+                                    <table class="skills-table">
+                                """);
+
+                        for (var skill :
+                                resume.getSkills()) {
+
+                            if (isEmpty(
                                     skill.getCategory()
                             )
-                    );
+                                    && isEmpty(
+                                    skill.getSkillValues()
+                            )) {
 
-                    html.append(":");
-                }
+                                continue;
+                            }
 
+                            html.append("""
+                                        <tr>
 
-                html.append("""
-                                </td>
+                                            <td class="skills-bullet">
 
-                                <td class="skills-values">
-                        """);
+                                                <span class="filled-bullet">•</span>
 
+                                            </td>
 
-                html.append(
-                        safe(
-                                skill.getSkillValues()
-                        )
-                );
+                                            <td class="skills-category">
+                                    """);
 
+                            if (!isEmpty(
+                                    skill.getCategory()
+                            )) {
 
-                html.append("""
-                                </td>
+                                html.append(
+                                        safe(
+                                                skill.getCategory()
+                                        )
+                                );
 
-                            </tr>
-                        """);
-            }
+                                html.append(":");
+                            }
 
+                            html.append("""
+                                            </td>
 
-            html.append("""
-                        </table>
+                                            <td class="skills-values">
+                                    """);
 
-                    </div>
-                    """);
-        }
+                            html.append(
+                                    safe(
+                                            skill.getSkillValues()
+                                    )
+                            );
 
+                            html.append("""
+                                            </td>
 
-        // =========================================================
-        // PROJECTS
-        //
-        // HOLLOW CSS CIRCLE
-        //
-        // NO <li>, <ul>, <ol> ARE SENT TO PDF
-        // =========================================================
+                                        </tr>
+                                    """);
+                        }
 
-        if (resume.getProjects() != null
-                && !resume.getProjects().isEmpty()) {
+                        html.append("""
+                                    </table>
 
-            html.append("""
-                    <div class="section">
+                                </div>
+                                """);
+                    }
 
-                        <div class="section-title">
-                            Projects
-                        </div>
-                    """);
-
-
-            for (var project :
-                    resume.getProjects()) {
-
-                if (isEmpty(
-                        project.getProjectName()
-                )
-                        && isEmpty(
-                        project.getDescription()
-                )) {
-
-                    continue;
-                }
+                    break;
 
 
-                html.append("""
-                        <div class="project">
+                // =====================================================
+                // PROJECTS
+                // =====================================================
 
-                            <div class="project-name">
-                    """);
+                case "projects":
 
+                    if (resume.getProjects() != null
+                            && !resume.getProjects().isEmpty()) {
 
-                html.append(
-                        safe(
-                                project.getProjectName()
-                        )
-                );
+                        html.append("""
+                                <div class="section">
 
+                                    <div class="section-title">
+                                """);
 
-                html.append("""
-                            </div>
-                    """);
+                        html.append(
+                                safe(
+                                        resume.getProjectsTitle()
+                                )
+                        );
 
+                        html.append("""
+                                    </div>
+                                """);
 
-                if (!isEmpty(
-                        project.getDescription()
-                )) {
+                        for (var project :
+                                resume.getProjects()) {
 
-                    html.append(
-                            createProjectBullets(
-                                    project.getDescription()
+                            if (isEmpty(
+                                    project.getProjectName()
                             )
-                    );
-                }
+                                    && isEmpty(
+                                    project.getDescription()
+                            )) {
+
+                                continue;
+                            }
+
+                            html.append("""
+                                    <div class="project">
+
+                                        <div class="project-name">
+                                """);
+
+                            html.append(
+                                    safe(
+                                            project.getProjectName()
+                                    )
+                            );
+
+                            html.append("""
+                                        </div>
+                                """);
+
+                            if (!isEmpty(
+                                    project.getDescription()
+                            )) {
+
+                                html.append(
+                                        createProjectBullets(
+                                                project.getDescription()
+                                        )
+                                );
+                            }
+
+                            html.append("""
+                                    </div>
+                                    """);
+                        }
+
+                        html.append("""
+                                </div>
+                                """);
+                    }
+
+                    break;
 
 
-                html.append("""
-                        </div>
-                        """);
-            }
+                // =====================================================
+                // CERTIFICATIONS
+                // =====================================================
 
+                case "certifications":
 
-            html.append("""
-                    </div>
-                    """);
-        }
+                    if (resume.getCertifications() != null
+                            && !resume.getCertifications().isEmpty()) {
 
+                        html.append("""
+                                <div class="section">
 
-        // =========================================================
-        // CERTIFICATIONS
-        //
-        // FILLED CSS CIRCLE
-        // DATE RIGHT ALIGNED
-        // =========================================================
+                                    <div class="section-title">
+                                """);
 
-        if (resume.getCertifications() != null
-                && !resume.getCertifications().isEmpty()) {
+                        html.append(
+                                safe(
+                                        resume.getCertificationsTitle()
+                                )
+                        );
 
-            html.append("""
-                    <div class="section">
+                        html.append("""
+                                    </div>
 
-                        <div class="section-title">
-                            Certifications
-                        </div>
+                                    <table class="certifications-table">
+                                """);
 
-                        <table class="certifications-table">
-                    """);
+                        for (var certification :
+                                resume.getCertifications()) {
 
-
-            for (var certification :
-                    resume.getCertifications()) {
-
-                if (isEmpty(
-                        certification.getName()
-                )
-                        && isEmpty(
-                        certification.getOrganization()
-                )
-                        && isEmpty(
-                        certification.getDate()
-                )) {
-
-                    continue;
-                }
-
-
-                html.append("""
-                               <tr>
-
-                               <td class="certification-name certification-name-with-bullet">
-                        
-                                   <span class="filled-bullet">•</span>&#160;
-                        """);
-
-
-                if (!isEmpty(
-                        certification.getName()
-                )) {
-
-                    html.append(
-                            safe(
+                            if (isEmpty(
                                     certification.getName()
                             )
-                    );
-                }
-
-
-                if (!isEmpty(
-                        certification.getOrganization()
-                )) {
-
-                    html.append(" - ");
-
-                    html.append(
-                            safe(
+                                    && isEmpty(
                                     certification.getOrganization()
                             )
-                    );
-                }
-
-
-                html.append("""
-                                </td>
-
-                                <td class="certification-date">
-                        """);
-
-
-                if (!isEmpty(
-                        certification.getDate()
-                )) {
-
-                    html.append(
-                            safe(
+                                    && isEmpty(
                                     certification.getDate()
-                            )
-                    );
-                }
+                            )) {
+
+                                continue;
+                            }
+
+                            html.append("""
+                                        <tr>
+
+                                            <td class="certification-name certification-name-with-bullet">
+
+                                                <span class="filled-bullet">•</span>&#160;
+                                    """);
+
+                            if (!isEmpty(
+                                    certification.getName()
+                            )) {
+
+                                html.append(
+                                        safe(
+                                                certification.getName()
+                                        )
+                                );
+                            }
+
+                            if (!isEmpty(
+                                    certification.getOrganization()
+                            )) {
+
+                                html.append(" - ");
+
+                                html.append(
+                                        safe(
+                                                certification.getOrganization()
+                                        )
+                                );
+                            }
+
+                            html.append("""
+                                            </td>
+
+                                            <td class="certification-date">
+                                    """);
+
+                            if (!isEmpty(
+                                    certification.getDate()
+                            )) {
+
+                                html.append(
+                                        safe(
+                                                certification.getDate()
+                                        )
+                                );
+                            }
+
+                            html.append("""
+                                            </td>
+
+                                        </tr>
+                                    """);
+                        }
+
+                        html.append("""
+                                    </table>
+
+                                </div>
+                                """);
+                    }
+
+                    break;
 
 
-                html.append("""
-                                </td>
+                default:
 
-                            </tr>
-                        """);
+                    // Ignore unknown section keys safely.
+                    break;
             }
-
-
-            html.append("""
-                        </table>
-
-                    </div>
-                    """);
         }
 
 
