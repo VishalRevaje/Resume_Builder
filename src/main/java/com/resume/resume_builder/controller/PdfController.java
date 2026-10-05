@@ -202,6 +202,35 @@ public class PdfController {
                             font-size: 10pt;
                         }
 
+                        .header-block {
+                            margin-bottom: 5px;
+                            text-align: center;
+                        }
+
+                        .header-block .name {
+                            display: block;
+                            font-size: 17pt;
+                            font-weight: bold;
+                            line-height: 1.3;
+                            margin-bottom: 3px;
+                        }
+
+                        .contact-line {
+                            font-size: 10pt;
+                            line-height: 1.5;
+                            text-align: center;
+                        }
+
+                        .contact-label {
+                            font-weight: bold;
+                        }
+
+                        .project-tech {
+                            font-size: 10pt;
+                            font-style: italic;
+                            margin-bottom: 3px;
+                        }
+
 
                         /* =================================================
                            SECTIONS
@@ -416,9 +445,9 @@ public class PdfController {
 
                             width: 12px;
 
-                            padding-top: 4px;
+                            padding-top: 1px;
 
-                            padding-bottom: 3px;
+                            padding-bottom: 0;
 
                             padding-left: 20px;
 
@@ -427,6 +456,15 @@ public class PdfController {
                             vertical-align: top;
 
                             text-align: left;
+
+                            line-height: 1.3;
+                        }
+
+                        .project-bullet .filled-bullet {
+
+                            line-height: 1.3;
+
+                            vertical-align: baseline;
                         }
 
 
@@ -569,141 +607,53 @@ public class PdfController {
         // LinkedIn
         // =========================================================
 
-        html.append("""
-                <table class="header-table">
+        // Name on its own line. Contact details sit on separate lines
+        // below it, separated by "|" and without "Label:" prefixes so
+        // ATS parsers read the name, email, phone and location cleanly.
 
-                    <tr style="padding-bottom: 10px;">
+        java.util.List<String> contactParts = new java.util.ArrayList<>();
 
-                        <td class="header-left header-row">
-
-                            <span class="name">
-                """);
-
-        html.append(
-                safe(resume.getFullName())
-        );
-
-        html.append("""
-                            </span>
-
-                        </td>
-
-                        <td class="header-right header-row" style="padding-bottom: 10px;">
-
-                            <span class="label">
-                                Location:
-                            </span>
-                """);
-
-        html.append(
-                safe(resume.getLocation())
-        );
-
-        html.append("""
-                        </td>
-
-                    </tr>
-
-
-                    <tr>
-
-                        <td class="header-left header-row">
-
-                            <span class="label">
-                                Email:
-                            </span>
-                """);
-
-        html.append(
-                "<span class=\"header-link\">" +
-                        safe(resume.getEmail()) +
-                        "</span>"
-        );
-
-        html.append("""
-                        </td>
-
-                        <td class="header-right header-row">
-
-                            <span class="label">
-                                Mobile:
-                            </span>
-                """);
-
-        html.append(
-                safe(resume.getMobile())
-        );
-
-        html.append("""
-                        </td>
-
-                    </tr>
-
-
-                    <tr>
-
-                        <td class="header-left header-row">
-
-                            <span class="label">
-                                GitHub:
-                            </span>
-                """);
-
-        String github = resume.getGithub();
-
-        if (!isEmpty(github)) {
-            String githubUrl = github.trim();
-
-            if (!githubUrl.startsWith("http://")
-                    && !githubUrl.startsWith("https://")) {
-                githubUrl = "https://" + githubUrl;
-            }
-
-            html.append(
-                    "<a class=\"header-link\" href=\"" +
-                            safe(githubUrl) +
-                            "\" target=\"_blank\">" +
-                            safe(github) +
-                            "</a>"
-            );
+        if (!isEmpty(resume.getLocation())) {
+            contactParts.add("<span class=\"contact-label\">Location:</span> " + safe(resume.getLocation().trim()));
         }
 
-        html.append("""
-                        </td>
-
-                        <td class="header-right header-row">
-
-                            <span class="label">
-                                LinkedIn:
-                            </span>
-                """);
-
-        String linkedin = resume.getLinkedin();
-
-        if (!isEmpty(linkedin)) {
-            String linkedinUrl = linkedin.trim();
-
-            if (!linkedinUrl.startsWith("http://")
-                    && !linkedinUrl.startsWith("https://")) {
-                linkedinUrl = "https://" + linkedinUrl;
-            }
-
-            html.append(
-                    "<a class=\"header-link\" href=\"" +
-                            safe(linkedinUrl) +
-                            "\" target=\"_blank\">" +
-                            safe(linkedin) +
-                            "</a>"
-            );
+        if (!isEmpty(resume.getMobile())) {
+            contactParts.add("<span class=\"contact-label\">Mobile:</span> " + safe(resume.getMobile().trim()));
         }
 
-        html.append("""
-                        </td>
+        if (!isEmpty(resume.getEmail())) {
+            contactParts.add("<span class=\"contact-label\">Email:</span> " + safe(resume.getEmail().trim()));
+        }
 
-                    </tr>
+        java.util.List<String> linkParts = new java.util.ArrayList<>();
 
-                </table>
-                """);
+        if (!isEmpty(resume.getGithub())) {
+            linkParts.add("<span class=\"contact-label\">GitHub:</span> " + buildLink(resume.getGithub()));
+        }
+
+        if (!isEmpty(resume.getLinkedin())) {
+            linkParts.add("<span class=\"contact-label\">LinkedIn:</span> " + buildLink(resume.getLinkedin()));
+        }
+
+        html.append("<div class=\"header-block\">");
+
+        html.append("<span class=\"name\">")
+                .append(safe(resume.getFullName()))
+                .append("</span>");
+
+        if (!contactParts.isEmpty()) {
+            html.append("<div class=\"contact-line\">")
+                    .append(String.join(" | ", contactParts))
+                    .append("</div>");
+        }
+
+        if (!linkParts.isEmpty()) {
+            html.append("<div class=\"contact-line\">")
+                    .append(String.join(" | ", linkParts))
+                    .append("</div>");
+        }
+
+        html.append("</div>");
 
 
         // =========================================================
@@ -1045,6 +995,36 @@ public class PdfController {
                                         </div>
                                 """);
 
+                            if (!isEmpty(project.getTechStack())) {
+
+                                html.append("<div class=\"project-tech\">");
+
+                                html.append("<b>Tech Stack:</b> ");
+
+                                html.append(
+                                        safe(
+                                                project.getTechStack().trim()
+                                        )
+                                );
+
+                                html.append("</div>");
+                            }
+
+                            if (!isEmpty(project.getGithubLink())) {
+
+                                html.append("<div class=\"project-tech\" style=\"font-style: normal;\">");
+
+                                html.append("<b>GitHub:</b> ");
+
+                                html.append(
+                                        buildLink(
+                                                project.getGithubLink()
+                                        )
+                                );
+
+                                html.append("</div>");
+                            }
+
                             if (!isEmpty(
                                     project.getDescription()
                             )) {
@@ -1351,8 +1331,7 @@ public class PdfController {
 
                         <td class="project-bullet">
 
-                            <span class="project-bullet-circle">
-                            </span>
+                            <span class="filled-bullet">•</span>
 
                         </td>
 
@@ -2010,6 +1989,29 @@ public class PdfController {
                     )
             );
         }
+    }
+
+
+    // =========================================================
+    // BUILD LINK (GitHub / LinkedIn)
+    // =========================================================
+
+    private String buildLink(String value) {
+
+        String text = value.trim();
+
+        String url = text;
+
+        if (!url.startsWith("http://")
+                && !url.startsWith("https://")) {
+            url = "https://" + url;
+        }
+
+        return "<a class=\"header-link\" href=\""
+                + safe(url)
+                + "\" target=\"_blank\">"
+                + safe(text)
+                + "</a>";
     }
 
 

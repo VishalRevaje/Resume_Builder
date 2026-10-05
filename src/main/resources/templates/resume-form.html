@@ -889,6 +889,14 @@
                           style="display:none;"></textarea>
 
 
+                <p id="summaryTip"
+                   style="font-size:12px;color:#555;margin:6px 0 0;">
+                    Tip: keep it to 2&ndash;3 lines (about 250&ndash;350 characters) and mention the role
+                    you are applying for.
+                    <span id="summaryCount"></span>
+                </p>
+
+
             </div>
 
 
@@ -1147,8 +1155,34 @@
                         </div>
 
 
+                        <div class="form-group">
+
+                            <label>
+                                Tech Stack
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{projects[__${stat.index}__].techStack}"
+                                   placeholder="Java, Spring Boot, Hibernate/JPA, MySQL, Thymeleaf">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                GitHub Link (optional)
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{projects[__${stat.index}__].githubLink}"
+                                   placeholder="github.com/username/project-repo">
+
+                        </div>
+
+
                         <label>
-                            Project Description
+                            Project Description (one point per line, start with an action verb)
                         </label>
 
 
@@ -1175,7 +1209,7 @@
                         <textarea
                                 th:field="*{projects[__${stat.index}__].description}"
                                 rows="7"
-                                placeholder="Describe the project...">
+                                placeholder="Built ...&#10;Implemented ...&#10;Designed ...">
                 </textarea>
 
 
@@ -1266,7 +1300,7 @@
 
                             <input type="text"
                                    th:field="*{certifications[__${stat.index}__].date}"
-                                   placeholder="June 2025">
+                                   placeholder="Jul 2025  or  Jan–Apr 2024">
 
                         </div>
 
@@ -1448,6 +1482,31 @@
 
     /* Load the existing summary as soon as the page is ready. */
     loadProfessionalSummary();
+
+    /* Live character counter for the summary (soft limit, not enforced). */
+    function updateSummaryCount() {
+
+        const counter = document.getElementById("summaryCount");
+
+        if (!summaryEditor || !counter) {
+            return;
+        }
+
+        const length = summaryEditor.innerText.trim().length;
+
+        counter.textContent = "(" + length + " characters)";
+
+        counter.style.color = length > 400 ? "#b00020" : "#555";
+
+        counter.style.fontWeight = length > 400 ? "bold" : "normal";
+    }
+
+    if (summaryEditor) {
+
+        summaryEditor.addEventListener("input", updateSummaryCount);
+
+        updateSummaryCount();
+    }
 
 
     /* =====================================================
@@ -1716,13 +1775,39 @@
             <div class="form-group">
 
                 <label>
-                    Project Description
+                    Tech Stack
+                </label>
+
+                <input
+                    type="text"
+                    name="projects[${projectIndex}].techStack"
+                    placeholder="Java, Spring Boot, Hibernate/JPA, MySQL">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    GitHub Link (optional)
+                </label>
+
+                <input
+                    type="text"
+                    name="projects[${projectIndex}].githubLink"
+                    placeholder="github.com/username/project-repo">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Project Description (one point per line, start with an action verb)
                 </label>
 
                 <textarea
                     name="projects[${projectIndex}].description"
                     rows="7"
-                    placeholder="Describe the project..."></textarea>
+                    placeholder="Built ...&#10;Implemented ...&#10;Designed ..."></textarea>
 
             </div>
 
@@ -1810,7 +1895,7 @@
                 <input
                     type="text"
                     name="certifications[${certificationIndex}].date"
-                    placeholder="June 2025">
+                    placeholder="Jul 2025  or  Jan–Apr 2024">
 
             </div>
 

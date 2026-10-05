@@ -12,6 +12,10 @@ public class Project {
 
     private String projectName;
 
+    private String techStack;
+
+    private String githubLink;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     private String description;
@@ -42,6 +46,26 @@ public class Project {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+
+    public String getTechStack() {
+        return techStack;
+    }
+
+
+    public void setTechStack(String techStack) {
+        this.techStack = techStack;
+    }
+
+
+    public String getGithubLink() {
+        return githubLink;
+    }
+
+
+    public void setGithubLink(String githubLink) {
+        this.githubLink = githubLink;
     }
 
 

@@ -158,15 +158,9 @@
 
         .header {
 
-            display: grid;
+            display: block;
 
-            grid-template-columns: 1fr 1fr;
-
-            grid-template-rows: 28px 22px 22px;
-
-            column-gap: 35px;
-
-            row-gap: 0;
+            text-align: center;
 
             width: 100%;
 
@@ -176,27 +170,35 @@
 
             font-size: 10.5px;
 
-            line-height: 1.45;
+            line-height: 1.5;
         }
 
 
         .header-cell {
 
-            width: 100%;
-
-            min-width: 0;
-
-            height: 100%;
-
-            text-align: left;
-
-            white-space: nowrap;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-
             display: block;
+
+            text-align: center;
+        }
+
+
+        .contact-line {
+
+            font-size: 10.5px;
+
+            line-height: 1.6;
+
+            text-align: center;
+        }
+
+
+        .project-tech {
+
+            font-size: 10.5px;
+
+            font-style: italic;
+
+            margin-bottom: 3px;
         }
 
 
@@ -208,7 +210,7 @@
 
             padding-top: 0;
 
-            padding-bottom: 2px;
+            margin-bottom: 3px;
         }
 
 
@@ -400,11 +402,11 @@
         /* =====================================================
            PROJECTS
 
-           HOLLOW CIRCLE = U+25CB = ○
+           FILLED CIRCLE = U+2022 = •
 
            Fixed columns:
 
-           ○ | Description
+           • | Description
 
            Every description starts at exactly the same place.
            ===================================================== */
@@ -706,118 +708,61 @@
 
     <div class="header">
 
-
-        <!-- ROW 1 LEFT -->
-
-        <div class="header-cell name-cell">
-
-            <span th:text="${resume.fullName}">
-                Vishal Revaje
-            </span>
-
+        <!-- LINE 1: NAME (centered) -->
+        <div class="header-cell name-cell"
+             th:text="${resume.fullName}">
+            Vishal Revaje
         </div>
 
+        <!-- LINE 2: LOCATION | MOBILE | EMAIL -->
+        <div class="contact-line">
 
-        <!-- ROW 1 RIGHT -->
-
-        <div class="header-cell">
-
-            <span class="contact-label">
-                Location:
+            <span th:if="${resume.location != null and !resume.location.isEmpty()}">
+                <span class="contact-label">Location:</span>
+                <span th:text="${resume.location}"></span>
             </span>
 
-            <span th:text="${resume.location}">
-                Solapur, Maharashtra
+            <span th:if="${resume.location != null and !resume.location.isEmpty()
+                           and ((resume.mobile != null and !resume.mobile.isEmpty())
+                                or (resume.email != null and !resume.email.isEmpty()))}"> | </span>
+
+            <span th:if="${resume.mobile != null and !resume.mobile.isEmpty()}">
+                <span class="contact-label">Mobile:</span>
+                <span th:text="${resume.mobile}"></span>
             </span>
 
-        </div>
+            <span th:if="${resume.mobile != null and !resume.mobile.isEmpty()
+                           and resume.email != null and !resume.email.isEmpty()}"> | </span>
 
-
-        <!-- ROW 2 LEFT -->
-
-        <div class="header-cell">
-
-            <span class="contact-label">
-                Email:
-            </span>
-
-            <span th:if="${resume.email != null
-                          and !resume.email.isEmpty()}">
-
+            <span th:if="${resume.email != null and !resume.email.isEmpty()}">
+                <span class="contact-label">Email:</span>
                 <a th:href="'mailto:' + ${resume.email}"
-                   th:text="${resume.email}">
-
-                    revajevishal39@gmail.com
-
-                </a>
-
+                   th:text="${resume.email}"></a>
             </span>
 
         </div>
 
+        <!-- LINE 3: GITHUB | LINKEDIN -->
+        <div class="contact-line">
 
-        <!-- ROW 2 RIGHT -->
-
-        <div class="header-cell">
-
-            <span class="contact-label">
-                Mobile:
-            </span>
-
-            <span th:text="${resume.mobile}">
-                +91 9579906987
-            </span>
-
-        </div>
-
-
-        <!-- ROW 3 LEFT -->
-
-        <div class="header-cell">
-
-            <span class="contact-label">
-                GitHub:
-            </span>
-
-            <span th:if="${resume.github != null
-                          and !resume.github.isEmpty()}">
-
-                <a th:href="${resume.github}"
+            <span th:if="${resume.github != null and !resume.github.isEmpty()}">
+                <span class="contact-label">GitHub:</span>
+                <a th:href="${resume.github.startsWith('http') ? resume.github : 'https://' + resume.github}"
                    target="_blank"
-                   th:text="${resume.github}">
-
-                    github.com/VishalRevaje
-
-                </a>
-
+                   th:text="${resume.github}"></a>
             </span>
 
-        </div>
+            <span th:if="${resume.github != null and !resume.github.isEmpty()
+                           and resume.linkedin != null and !resume.linkedin.isEmpty()}"> | </span>
 
-
-        <!-- ROW 3 RIGHT -->
-
-        <div class="header-cell">
-
-            <span class="contact-label">
-                LinkedIn:
-            </span>
-
-            <span th:if="${resume.linkedin != null
-                          and !resume.linkedin.isEmpty()}">
-
-                <a th:href="${resume.linkedin}"
+            <span th:if="${resume.linkedin != null and !resume.linkedin.isEmpty()}">
+                <span class="contact-label">LinkedIn:</span>
+                <a th:href="${resume.linkedin.startsWith('http') ? resume.linkedin : 'https://' + resume.linkedin}"
                    target="_blank"
-                   th:text="${resume.linkedin}">
-
-                    linkedin.com/in/vishal-revaje-3b513622a
-
-                </a>
-
+                   th:text="${resume.linkedin}"></a>
             </span>
 
         </div>
-
 
     </div>
 
@@ -1094,6 +1039,32 @@
 
                     Commercial Website with Stripe Payments
 
+                </div>
+
+
+                <!-- TECH STACK -->
+
+                <div class="project-tech"
+                     th:if="${project.techStack != null
+                         and !project.techStack.isEmpty()}">
+                    <b>Tech Stack:</b>
+                    <span th:text="${project.techStack}"></span>
+                </div>
+
+
+                <!-- GITHUB LINK (hidden when empty) -->
+
+                <div class="project-tech"
+                     style="font-style: normal;"
+                     th:if="${project.githubLink != null
+                         and !project.githubLink.trim().isEmpty()}">
+                    <b>GitHub:</b>
+                    <a th:href="${project.githubLink.trim().startsWith('http')
+                                  ? project.githubLink.trim()
+                                  : 'https://' + project.githubLink.trim()}"
+                       target="_blank"
+                       style="color: #111111; text-decoration: none;"
+                       th:text="${project.githubLink.trim()}"></a>
                 </div>
 
 
@@ -1386,9 +1357,9 @@
 
 
         /*
-         * Hollow circle.
+         * Filled bullet.
          *
-         * U+25CB
+         * U+2022
          */
 
         const bullet =
@@ -1402,7 +1373,7 @@
 
 
         bullet.textContent =
-            "\u25CB";
+            "\u2022";
 
 
         /*

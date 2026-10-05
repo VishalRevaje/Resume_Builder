@@ -111,6 +111,12 @@ public class ResumeService {
                     resume.getCertifications()) {
 
                 certification.setResume(resume);
+
+                certification.setDate(
+                        normalizeDateRange(
+                                certification.getDate()
+                        )
+                );
             }
         }
 
@@ -184,5 +190,23 @@ public class ResumeService {
 
 
         resumeRepository.delete(resume);
+    }
+
+    // =====================================================
+    // NORMALIZE DATE RANGES
+    //
+    // "Jan-Apr 2024" / "2020 - 2024" -> "Jan–Apr 2024" / "2020–2024"
+    // so every date range on the resume uses the same en dash.
+    // =====================================================
+
+    private String normalizeDateRange(String value) {
+
+        if (value == null) {
+            return null;
+        }
+
+        return value
+                .trim()
+                .replaceAll("\\s*[-\\u2014]\\s*", "\u2013");
     }
 }
