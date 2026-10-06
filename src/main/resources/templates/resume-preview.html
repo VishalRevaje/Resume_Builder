@@ -428,6 +428,15 @@
             margin-bottom: 4px;
         }
 
+        .project-link {
+
+            font-weight: normal;
+
+            color: #1a56db;
+
+            text-decoration: underline;
+        }
+
 
         .project-bullet-container {
 
@@ -1030,14 +1039,33 @@
                  class="project-item">
 
 
-                <!-- PROJECT NAME -->
+                <!-- PROJECT NAME + GITHUB + LIVE DEMO LINKS -->
 
                 <div class="project-name"
                      th:if="${project.projectName != null
-                         and !project.projectName.isEmpty()}"
-                     th:text="${project.projectName}">
+                         and !project.projectName.isEmpty()}">
 
-                    Commercial Website with Stripe Payments
+                    <span th:text="${project.projectName}">Commercial Website with Stripe Payments</span>
+
+                    <span th:if="${project.githubLink != null
+                                   and !project.githubLink.trim().isEmpty()}">
+                        |
+                        <a th:href="${project.githubLink.trim().startsWith('http')
+                                      ? project.githubLink.trim()
+                                      : 'https://' + project.githubLink.trim()}"
+                           target="_blank"
+                           class="project-link">GitHub</a>
+                    </span>
+
+                    <span th:if="${project.liveDemoLink != null
+                                   and !project.liveDemoLink.trim().isEmpty()}">
+                        |
+                        <a th:href="${project.liveDemoLink.trim().startsWith('http')
+                                      ? project.liveDemoLink.trim()
+                                      : 'https://' + project.liveDemoLink.trim()}"
+                           target="_blank"
+                           class="project-link">Live Demo</a>
+                    </span>
 
                 </div>
 
@@ -1049,22 +1077,6 @@
                          and !project.techStack.isEmpty()}">
                     <b>Tech Stack:</b>
                     <span th:text="${project.techStack}"></span>
-                </div>
-
-
-                <!-- GITHUB LINK (hidden when empty) -->
-
-                <div class="project-tech"
-                     style="font-style: normal;"
-                     th:if="${project.githubLink != null
-                         and !project.githubLink.trim().isEmpty()}">
-                    <b>GitHub:</b>
-                    <a th:href="${project.githubLink.trim().startsWith('http')
-                                  ? project.githubLink.trim()
-                                  : 'https://' + project.githubLink.trim()}"
-                       target="_blank"
-                       style="color: #111111; text-decoration: none;"
-                       th:text="${project.githubLink.trim()}"></a>
                 </div>
 
 

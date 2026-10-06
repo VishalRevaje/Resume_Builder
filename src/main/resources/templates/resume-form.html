@@ -1181,6 +1181,19 @@
                         </div>
 
 
+                        <div class="form-group">
+
+                            <label>
+                                Live Demo Link (optional)
+                            </label>
+
+                            <input type="text"
+                                   th:field="*{projects[__${stat.index}__].liveDemoLink}"
+                                   placeholder="your-project.onrender.com">
+
+                        </div>
+
+
                         <label>
                             Project Description (one point per line, start with an action verb)
                         </label>
@@ -1795,6 +1808,19 @@
                     type="text"
                     name="projects[${projectIndex}].githubLink"
                     placeholder="github.com/username/project-repo">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Live Demo Link (optional)
+                </label>
+
+                <input
+                    type="text"
+                    name="projects[${projectIndex}].liveDemoLink"
+                    placeholder="your-project.onrender.com">
 
             </div>
 

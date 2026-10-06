@@ -16,6 +16,8 @@ public class Project {
 
     private String githubLink;
 
+    private String liveDemoLink;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     private String description;
@@ -66,6 +68,16 @@ public class Project {
 
     public void setGithubLink(String githubLink) {
         this.githubLink = githubLink;
+    }
+
+
+    public String getLiveDemoLink() {
+        return liveDemoLink;
+    }
+
+
+    public void setLiveDemoLink(String liveDemoLink) {
+        this.liveDemoLink = liveDemoLink;
     }
 
 

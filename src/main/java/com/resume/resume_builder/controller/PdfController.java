@@ -225,6 +225,12 @@ public class PdfController {
                             font-weight: bold;
                         }
 
+                        .project-link {
+                            font-weight: normal;
+                            color: #1a56db;
+                            text-decoration: underline;
+                        }
+
                         .project-tech {
                             font-size: 10pt;
                             font-style: italic;
@@ -991,6 +997,30 @@ public class PdfController {
                                     )
                             );
 
+                            if (!isEmpty(project.getGithubLink())) {
+
+                                html.append(" | ");
+
+                                html.append(
+                                        buildProjectLink(
+                                                project.getGithubLink(),
+                                                "GitHub"
+                                        )
+                                );
+                            }
+
+                            if (!isEmpty(project.getLiveDemoLink())) {
+
+                                html.append(" | ");
+
+                                html.append(
+                                        buildProjectLink(
+                                                project.getLiveDemoLink(),
+                                                "Live Demo"
+                                        )
+                                );
+                            }
+
                             html.append("""
                                         </div>
                                 """);
@@ -1004,21 +1034,6 @@ public class PdfController {
                                 html.append(
                                         safe(
                                                 project.getTechStack().trim()
-                                        )
-                                );
-
-                                html.append("</div>");
-                            }
-
-                            if (!isEmpty(project.getGithubLink())) {
-
-                                html.append("<div class=\"project-tech\" style=\"font-style: normal;\">");
-
-                                html.append("<b>GitHub:</b> ");
-
-                                html.append(
-                                        buildLink(
-                                                project.getGithubLink()
                                         )
                                 );
 
@@ -1995,6 +2010,23 @@ public class PdfController {
     // =========================================================
     // BUILD LINK (GitHub / LinkedIn)
     // =========================================================
+
+    private String buildProjectLink(String value, String label) {
+
+        String url = value.trim();
+
+        if (!url.startsWith("http://")
+                && !url.startsWith("https://")) {
+            url = "https://" + url;
+        }
+
+        return "<a class=\"project-link\" href=\""
+                + safe(url)
+                + "\" target=\"_blank\">"
+                + safe(label)
+                + "</a>";
+    }
+
 
     private String buildLink(String value) {
 
