@@ -122,7 +122,7 @@ public class PdfController {
 
 
     // =================================================================================
-    // CREATE PDF HTML
+    // CREATE PDF HTML TEMPLATE
     // ==================================================================================
 
     private String createPdfHtml(Resume resume) {
@@ -258,7 +258,7 @@ public class PdfController {
 
 
                         /* ==============================================
-                           PROFESSIONAL SUMMARY
+                           PROFESSIONAL SUMMARY SECTION
                            ============================================== */
 
                         .summary {
@@ -275,7 +275,7 @@ public class PdfController {
 
 
                         /* ============================================================
-                           EDUCATION
+                           EDUCATION SECTION
                            ============================================================*/
 
                         .education-table {
@@ -355,7 +355,7 @@ public class PdfController {
 
 
                         /* ========================================================================
-                           TECHNICAL SKILLS
+                           TECHNICAL SKILLS SECTION
                            ======================================================================== */
 
                         .skills-table {
@@ -406,7 +406,7 @@ public class PdfController {
 
 
                         /* =================================================
-                           PROJECTS
+                           PROJECTS SECTION
                            ================================================= */
 
                         .project {
@@ -718,7 +718,7 @@ public class PdfController {
 
 
                 // =====================================================
-                // EDUCATION
+                // EDUCATION SECTION
                 // =====================================================
 
                 case "education":
@@ -1065,7 +1065,7 @@ public class PdfController {
 
 
                 // =====================================================
-                // CERTIFICATIONS
+                // CERTIFICATIONS SECTION
                 // =====================================================
 
                 case "certifications":
